@@ -1,0 +1,57 @@
+{
+  "events": [
+    {
+      "id": 1,
+      "title": "WFH's the New Normal?",
+      "date": "July 22, 2023",
+      "type": "Webinar",
+      "buttonText": "Register",
+      "link": "#",
+      "image": "/event1.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Your Network is Your Networth",
+      "date": "July 8, 2023",
+      "type": "Event",
+      "buttonText": "Get Tickets",
+      "link": "#",
+      "image": "/event2.jpg"
+    },
+    {
+      "id": 3,
+      "title": "Implementing Tech and AI in your World",
+      "date": "July 8, 2023",
+      "type": "Webinar",
+      "buttonText": "Register",
+      "link": "#",
+      "image": "/event3.jpg"
+    }
+  ],
+  "articles": [
+    {
+      "id": 1,
+      "title": "WFH's the New Normal?",
+      "date": "July 22, 2023",
+      "buttonText": "Register",
+      "link": "#",
+      "image": "/article1.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Your Guide to Networking",
+      "date": "July 8, 2023",
+      "buttonText": "Register",
+      "link": "#",
+      "image": "/article2.jpg"
+    },
+    {
+      "id": 3,
+      "title": "Building Your Support Network",
+      "date": "July 22, 2023",
+      "buttonText": "Register",
+      "link": "#",
+      "image": "/article3.jpg"
+    }
+  ]
+}
