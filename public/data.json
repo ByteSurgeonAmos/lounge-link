@@ -7,7 +7,7 @@
       "type": "Webinar",
       "buttonText": "Register",
       "link": "#",
-      "image": "/event1.jpg"
+      "image": "/11.png"
     },
     {
       "id": 2,
@@ -16,7 +16,7 @@
       "type": "Event",
       "buttonText": "Get Tickets",
       "link": "#",
-      "image": "/event2.jpg"
+      "image": "/9.png"
     },
     {
       "id": 3,
@@ -25,7 +25,7 @@
       "type": "Webinar",
       "buttonText": "Register",
       "link": "#",
-      "image": "/event3.jpg"
+      "image": "/3.png"
     }
   ],
   "articles": [
@@ -35,7 +35,7 @@
       "date": "July 22, 2023",
       "buttonText": "Register",
       "link": "#",
-      "image": "/article1.jpg"
+      "image": "/6.png"
     },
     {
       "id": 2,
@@ -43,7 +43,7 @@
       "date": "July 8, 2023",
       "buttonText": "Register",
       "link": "#",
-      "image": "/article2.jpg"
+      "image": "/5.png"
     },
     {
       "id": 3,
@@ -51,7 +51,7 @@
       "date": "July 22, 2023",
       "buttonText": "Register",
       "link": "#",
-      "image": "/article3.jpg"
+      "image": "/7.png"
     }
   ]
 }

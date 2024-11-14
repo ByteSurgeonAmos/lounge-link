@@ -10,13 +10,13 @@ const Footer = () => {
           <div className="text-center  md:text-left mb-6 md:mb-0">
             <div className="flex items-center justify-center md:justify-start mb-4">
               <img
-                src="/loungelink-logo.png" // Logo image path
+                src="/lounge-icon.png" // Logo image path
                 alt="LoungeLink Logo"
-                className="h-8 mr-2"
+                className=" mr-2 w-[200] h-[150]"
               />
-              <span className="text-2xl font-bold text-[#1ea0b7]">
+              {/* <span className="text-2xl font-bold text-[#1ea0b7]">
                 LOUNGELINK
-              </span>
+              </span> */}
             </div>
             <p>
               Stay Linked by subscribing to our newsletter and other updates.

@@ -1,22 +1,42 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
 const imageList = [
-  "/image1.jpg",
-  "/image2.jpg",
-  "/image3.jpg",
-  "/image4.jpg",
-  "/image5.jpg",
-  "/image6.jpg",
-  "/image7.jpg",
-  "/image8.jpg",
+  "/1.png",
+  "/2.png",
+  "/3.png",
+  "/4.png",
+  "/5.png",
+  "/6.png",
+  "/7.png",
+  "/8.png",
 ];
 
 const ImageNetwork = () => {
+  const [hoverIndex, setHoverIndex] = useState(-1);
+
+  useEffect(() => {
+    const handleMouseMove = (e: any) => {
+      const networkContainer: any =
+        document.querySelector(".network-container");
+      const rect = networkContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const index = Math.floor((x / rect.width) * imageList.length);
+      setHoverIndex(index);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
   return (
-    <div className="network-container">
+    <div className="network-container relative w-full h-full">
       <svg
-        className="svg-lines"
+        className="svg-lines absolute inset-0 w-full h-full"
         viewBox="0 0 300 300"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -56,15 +76,20 @@ const ImageNetwork = () => {
         {/* Add more lines as needed to create the network effect */}
       </svg>
 
-      <div className="bubble-grid">
+      <div className="bubble-grid absolute inset-0 w-full h-full flex justify-center items-center">
         {imageList.map((src, index) => (
-          <div key={index} className="bubble">
+          <div
+            key={index}
+            className={`bubble relative w-20 h-20 mx-4 my-4 transition-transform duration-300 ${
+              hoverIndex === index ? "scale-125" : ""
+            }`}
+          >
             <Image
               src={src}
               alt={`Bubble ${index + 1}`}
               layout="fill"
               objectFit="cover"
-              className="circle-image bg-white"
+              className="circle-image bg-white rounded-full"
             />
           </div>
         ))}
