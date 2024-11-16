@@ -1,7 +1,11 @@
+"use client";
 import React, { useState } from "react";
 import Link from "next/link";
 import { HiHome, HiUser, HiChatAlt2, HiCog } from "react-icons/hi";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import { MdExplore, MdCampaign } from "react-icons/md";
+import { BiLinkAlt } from "react-icons/bi";
+import { RiVipCrownLine } from "react-icons/ri";
 
 interface NavItem {
   title: string;
@@ -15,11 +19,15 @@ const Sidenav: React.FC = () => {
   const navItems: NavItem[] = [
     { title: "Dashboard", path: "/dashboard", icon: <HiHome size={24} /> },
     { title: "Feed", path: "/feed", icon: <HiChatAlt2 size={24} /> },
-    { title: "My Links", path: "/my-links", icon: <HiUser size={24} /> },
+    { title: "My Links", path: "/my-links", icon: <BiLinkAlt size={24} /> },
     { title: "LiveLinks", path: "/live-links", icon: <HiUser size={24} /> },
-    { title: "Discover", path: "/discover", icon: <HiChatAlt2 size={24} /> },
-    { title: "Try Premium", path: "/try-premium", icon: <HiCog size={24} /> },
-    { title: "Promote", path: "/promote", icon: <HiCog size={24} /> },
+    { title: "Discover", path: "/discover", icon: <MdExplore size={24} /> },
+    {
+      title: "Try Premium",
+      path: "/try-premium",
+      icon: <RiVipCrownLine size={24} />,
+    },
+    { title: "Promote", path: "/promote", icon: <MdCampaign size={24} /> },
     { title: "Settings", path: "/settings", icon: <HiCog size={24} /> },
   ];
 
@@ -47,12 +55,15 @@ const Sidenav: React.FC = () => {
                 md:translate-x-0`}
       >
         {/* Logo */}
-        <div className=" border-b border-blue-300">
-          <h1 className="text-xl  font-bold flex justify-center items-center">
-            <img src="/logo-white.png" className="w-[100px]" alt="" />
-
-            <p className=""> LOUNGELINK</p>
-          </h1>
+        <div className="border-b border-blue-300 p-4">
+          <div className="flex items-center justify-center space-x-2">
+            <img
+              src="/logo-white.png"
+              className="w-[40px] h-[40px] object-contain"
+              alt="LoungeLink Logo"
+            />
+            <h1 className="text-2xl font-bold tracking-wider">LOUNGELINK</h1>
+          </div>
         </div>
 
         {/* Navigation Items */}
