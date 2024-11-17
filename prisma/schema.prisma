@@ -12,3 +12,62 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  username      String    @unique
+  phoneNumber   String?   @unique
+  avatar        String?
+  bio          String?   @db.Text
+  quote        String?   @db.Text
+  designation  String?   
+  country      String?   
+  city         String?   
+  role         Role      @default(USER)
+  isVerified   Boolean   @default(false)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  personalInterests String[]  @default([])
+  topSkills        String[]  @default([])
+  linkPreferences  String[]  @default([])
+  lookingFor       String[]  @default([])
+  topInterests     String[]  @default([])
+  currentProjects  String[]  @default([])
+  isSubscribed        Boolean   @default(false)
+  subscriptionEndDate DateTime?
+  subscriptionTier    SubscriptionTier @default(FREE)
+  subscription        Subscription?
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+model Subscription {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  tier            SubscriptionTier
+  startDate       DateTime  @default(now())
+  endDate         DateTime
+  autoRenew       Boolean   @default(true)
+  paymentStatus   String
+  lastPaymentDate DateTime?
+  amount          Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
