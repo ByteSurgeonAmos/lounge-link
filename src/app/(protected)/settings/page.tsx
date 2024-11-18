@@ -1,31 +1,93 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { Edit2, ExternalLink } from "lucide-react";
+import { getProfile } from "./actions";
+import { toast } from "sonner";
+import { EditProfileModal } from "@/components/EditProfileModal";
+import { ChainLoader } from "@/components/ChainLoader";
 
 const ProfileSettingsPage = () => {
-  const skills = ["Design", "Coding", "Management"];
-  const preferences = ["Local Events", "Virtual Meetups", "Coffee Chats"];
-  const lookingFor = ["Mentorship", "Collaboration", "Teams"];
-  const interests = ["Tech", "Design", "Marketing"];
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [editSection, setEditSection] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await getProfile();
+      setProfile(data);
+    } catch (error) {
+      toast.error("Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (section: string, data: any) => {
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error("Update failed");
+
+      const updatedProfile = await response.json();
+      setProfile(updatedProfile);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error("Failed to update profile");
+    }
+  };
+
+  const handleEdit = (section: string) => {
+    setEditSection(section);
+  };
+
+  const handleSave = async (data: any) => {
+    await handleUpdateProfile(editSection!, data);
+    setEditSection(null);
+  };
+
+  if (loading) {
+    return <ChainLoader />;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">My Profile</h2>
-      </div>
-
       {/* Profile Header */}
-      <div className="bg-gray-50  rounded-lg p-4 mb-6">
+      <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex sm:flex-col items-center gap-4">
-            <img
-              src="https://via.placeholder.com/100"
-              alt="Profile"
-              className="w-16 h-16 rounded-full"
-            />
+            <div className="relative">
+              <img
+                src={profile?.avatar || "https://via.placeholder.com/100"}
+                alt="Profile"
+                className="w-16 h-16 rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "https://via.placeholder.com/100";
+                }}
+              />
+              <button
+                onClick={() => handleEdit("personal")}
+                className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
+              >
+                <Edit2 className="w-4 h-4 text-custom-blue" />
+              </button>
+            </div>
             <div>
-              <h3 className="text-lg font-semibold">Jane Doe</h3>
-              <p className="text-gray-600">Product Designer</p>
-              <p className="text-gray-600 text-sm">Nairobi, Kenya</p>
+              <h3 className="text-lg font-semibold">
+                {profile?.firstName} {profile?.lastName}
+              </h3>
+              <p className="text-gray-600">{profile?.designation}</p>
+              <p className="text-gray-600 text-sm">
+                {profile?.city}, {profile?.country}
+              </p>
             </div>
           </div>
           <button className="flex items-center gap-2 text-custom-blue hover:text-blue-600">
@@ -39,7 +101,10 @@ const ProfileSettingsPage = () => {
       <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Personal Information</h3>
-          <button className="flex items-center gap-2 text-custom-blue hover:text-blue-600">
+          <button
+            onClick={() => handleEdit("personal")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
             <Edit2 className="w-4 h-4" />
             Edit
           </button>
@@ -47,27 +112,27 @@ const ProfileSettingsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <p className="text-gray-600 mb-1">First Name</p>
-            <p className="font-medium">Jane</p>
+            <p className="font-medium">{profile?.firstName}</p>
           </div>
           <div>
             <p className="text-gray-600 mb-1">Last Name</p>
-            <p className="font-medium">Doe</p>
+            <p className="font-medium">{profile?.lastName}</p>
           </div>
           <div className="sm:col-span-2">
             <p className="text-gray-600 mb-1">Email</p>
-            <p className="font-medium break-all">janedoe@example.com</p>
+            <p className="font-medium break-all">{profile?.email}</p>
           </div>
           <div>
             <p className="text-gray-600 mb-1">Phone Number</p>
-            <p className="font-medium">+254********</p>
+            <p className="font-medium">{profile?.phoneNumber}</p>
           </div>
           <div>
             <p className="text-gray-600 mb-1">Country</p>
-            <p className="font-medium">Example</p>
+            <p className="font-medium">{profile?.country}</p>
           </div>
           <div>
             <p className="text-gray-600 mb-1">City</p>
-            <p className="font-medium">City Example</p>
+            <p className="font-medium">{profile?.city}</p>
           </div>
         </div>
       </div>
@@ -76,7 +141,10 @@ const ProfileSettingsPage = () => {
       <div className="bg-gray-50 rounded-lg p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Additional Information</h3>
-          <button className="flex items-center gap-2 text-custom-blue hover:text-blue-600">
+          <button
+            onClick={() => handleEdit("additional")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
             <Edit2 className="w-4 h-4" />
             Edit
           </button>
@@ -84,67 +152,115 @@ const ProfileSettingsPage = () => {
 
         <div className="mb-6">
           <h4 className="font-medium mb-2">About Me</h4>
-          <p className="text-gray-600">
-            I'm a product designer who loves solving design challenges and
-            understanding how people interact with technology. When I'm not
-            designing better experiences for groups and outside of work, you'll
-            find me hiking, trying new recipes, or volunteering with local youth
-            programs.
-          </p>
+          <p className="text-gray-600">{profile?.bio}</p>
         </div>
 
         <div className="mb-6">
           <h4 className="font-medium mb-2">A quote I live by...</h4>
-          <p className="text-gray-600 italic">
-            "The secret of getting ahead is getting started. Successful
-            entrepreneurs always find the best way to predict the future is to
-            create it."
-          </p>
+          <p className="text-gray-600 italic">{profile?.quote}</p>
         </div>
+      </div>
 
-        <div className="mb-6">
-          <h4 className="font-medium mb-2">Personal Interests</h4>
-          <p className="text-gray-600">
-            Pro Tennis player. By pro I mean, I took one class and it went
-            great! I love hiking, exploring new places, and getting lost in
-            books while learning about AI and other emerging technologies.
-          </p>
+      {/* Skills Section */}
+      <div className="bg-gray-50 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Skills & Expertise</h3>
+          <button
+            onClick={() => handleEdit("skills")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit
+          </button>
         </div>
-
-        <div className="mb-6">
-          <h4 className="font-medium mb-2">Current Projects</h4>
-          <div className="text-gray-600">
-            <p>Redesigning Onboarding Experience for a Health App</p>
-            <a
-              href="http://healthapp.com"
-              className="text-custom-blue flex items-center gap-1 hover:text-blue-600"
+        <div className="flex flex-wrap gap-2">
+          {profile?.topSkills?.map((skill: string) => (
+            <span
+              key={skill}
+              className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
             >
-              www.healthapp.com
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
+              {skill}
+            </span>
+          ))}
         </div>
+      </div>
 
+      {/* Projects Section */}
+      <div className="bg-gray-50 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Current Projects</h3>
+          <button
+            onClick={() => handleEdit("projects")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {profile?.currentProjects?.map((project: string) => (
+            <span
+              key={project}
+              className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
+            >
+              {project}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Interests Section */}
+      <div className="bg-gray-50 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Interests</h3>
+          <button
+            onClick={() => handleEdit("interests")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit
+          </button>
+        </div>
         <div>
-          <h4 className="font-medium mb-2">Top Skills</h4>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
+          <h4 className="font-medium mb-2">Personal Interests</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {profile?.personalInterests?.map((interest: string) => (
               <span
-                key={skill}
+                key={interest}
                 className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
               >
-                {skill}
+                {interest}
+              </span>
+            ))}
+          </div>
+          <h4 className="font-medium mb-2">Top Interests</h4>
+          <div className="flex flex-wrap gap-2">
+            {profile?.topInterests?.map((interest: string) => (
+              <span
+                key={interest}
+                className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
+              >
+                {interest}
               </span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Preferences */}
+      {/* Preferences Section */}
       <div className="bg-gray-50 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Link Preferences</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Link Preferences</h3>
+          <button
+            onClick={() => handleEdit("preferences")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit
+          </button>
+        </div>
         <div className="flex flex-wrap gap-2">
-          {preferences.map((pref) => (
+          {profile?.preferences?.map((pref: string) => (
             <span
               key={pref}
               className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
@@ -155,13 +271,22 @@ const ProfileSettingsPage = () => {
         </div>
       </div>
 
-      {/* Looking For */}
+      {/* Looking For Section */}
       <div className="bg-gray-50 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">
-          What I'm looking for right now
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">
+            What I'm looking for right now
+          </h3>
+          <button
+            onClick={() => handleEdit("lookingFor")}
+            className="flex items-center gap-2 text-custom-blue hover:text-blue-600"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit
+          </button>
+        </div>
         <div className="flex flex-wrap gap-2">
-          {lookingFor.map((item) => (
+          {profile?.lookingFor?.map((item: string) => (
             <span
               key={item}
               className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
@@ -172,27 +297,23 @@ const ProfileSettingsPage = () => {
         </div>
       </div>
 
-      {/* Interests */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Top Interests</h3>
-        <div className="flex flex-wrap gap-2">
-          {interests.map((interest) => (
-            <span
-              key={interest}
-              className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"
-            >
-              {interest}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* Save Button */}
       <div className="flex justify-end">
-        <button className="bg-custom-blue text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+        <button
+          onClick={() => handleUpdateProfile("all", profile)}
+          className="bg-custom-blue text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+        >
           Save Profile
         </button>
       </div>
+
+      <EditProfileModal
+        isOpen={!!editSection}
+        onClose={() => setEditSection(null)}
+        onSave={handleSave}
+        section={editSection || ""}
+        initialData={profile}
+      />
     </div>
   );
 };

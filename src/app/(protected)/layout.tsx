@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Sidenav from "@/components/Sidenav";
 import AuthNavbar from "@/components/Authnavbar";
+import { ChainLoader } from "@/components/ChainLoader";
 
 export default function ProtectedLayout({
   children,
@@ -21,7 +22,14 @@ export default function ProtectedLayout({
   }, [status, router]);
 
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        {/* <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div> */}
+        <div className="">
+          <ChainLoader />
+        </div>
+      </div>
+    );
   }
 
   return (

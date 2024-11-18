@@ -1,7 +1,11 @@
+"use client";
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const SettingsLayout = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+
   const navigationItems = [
     { title: "My Profile", path: "/settings" },
     { title: "Security", path: "/settings/security" },
@@ -29,8 +33,10 @@ const SettingsLayout = ({ children }: { children: React.ReactNode }) => {
                 <Link href={item.path} key={index}>
                   <div
                     className={`py-2 px-4 rounded-md cursor-pointer mb-1 hover:bg-gray-50 ${
-                      item.className || ""
-                    }`}
+                      pathname === item.path
+                        ? "bg-gray-100 font-medium text-custom-blue"
+                        : ""
+                    } ${item.className || ""}`}
                   >
                     {item.title}
                   </div>
