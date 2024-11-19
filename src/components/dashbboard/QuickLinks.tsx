@@ -1,16 +1,78 @@
-import React from "react";
-import { Box, Paper, Typography, Stack, Button } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Paper,
+  Typography,
+  Stack,
+  Button,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import SettingsIcon from "@mui/icons-material/Settings";
+import { useRouter } from "next/navigation";
 
 const QuickLinks: React.FC = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch("/api/profile");
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleVerifyEmail = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/auth/send-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to send verification email");
+
+      setFeedback({
+        open: true,
+        message: "Verification email sent! Please check your inbox.",
+        severity: "success",
+      });
+    } catch (error) {
+      setFeedback({
+        open: true,
+        message: "Failed to send verification email. Please try again.",
+        severity: "error",
+      });
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const quickLinks = [
-    {
+    !profile?.isVerified && {
       title: "Verify Email",
       icon: <EmailIcon />,
       description: "Confirm your email address for account security",
-      action: () => console.log("Verify email clicked"),
+      action: handleVerifyEmail,
     },
     {
       title: "Verify Phone Number",
@@ -22,9 +84,9 @@ const QuickLinks: React.FC = () => {
       title: "Set Your Preferences",
       icon: <SettingsIcon />,
       description: "Customize your account settings",
-      action: () => console.log("Preferences clicked"),
+      action: () => router.push("settings/notifications"),
     },
-  ];
+  ].filter(Boolean);
 
   return (
     <Box className="bg-custom-blue text-white" sx={{ p: 2 }}>
@@ -32,7 +94,7 @@ const QuickLinks: React.FC = () => {
         Quick Links
       </Typography>
       <Stack spacing={2}>
-        {quickLinks.map((link, index) => (
+        {quickLinks.map((link: any, index) => (
           <Paper
             key={index}
             sx={{
@@ -56,6 +118,7 @@ const QuickLinks: React.FC = () => {
                 variant="contained"
                 sx={{ ml: "auto" }}
                 onClick={link.action}
+                disabled={loading}
               >
                 Get Started
               </Button>
@@ -63,6 +126,13 @@ const QuickLinks: React.FC = () => {
           </Paper>
         ))}
       </Stack>
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={6000}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+      >
+        <Alert severity={feedback.severity}>{feedback.message}</Alert>
+      </Snackbar>
     </Box>
   );
 };

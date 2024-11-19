@@ -61,6 +61,7 @@ export async function GET() {
         currentProjects: true,
         isProfileComplete: true,
         subscriptionTier: true,
+        isVerified: true,
       },
     });
 
@@ -90,7 +91,19 @@ export async function PUT(request: Request) {
     const validatedData = ProfileUpdateSchema.parse(body);
     const updatedUser = await prisma.user.update({
       where: { email: session.user?.email },
-      data: validatedData,
+      data: {
+        ...validatedData,
+        username: validatedData.username ?? undefined,
+        firstName: validatedData.firstName ?? undefined,
+        lastName: validatedData.lastName ?? undefined,
+        phoneNumber: validatedData.phoneNumber ?? undefined,
+        avatar: validatedData.avatar ?? undefined,
+        bio: validatedData.bio ?? undefined,
+        quote: validatedData.quote ?? undefined,
+        designation: validatedData.designation ?? undefined,
+        country: validatedData.country ?? undefined,
+        city: validatedData.city ?? undefined,
+      },
       select: {
         id: true,
         email: true,
