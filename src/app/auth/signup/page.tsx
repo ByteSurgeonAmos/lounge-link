@@ -4,7 +4,7 @@ import ImageNetwork from "@/components/ImageNetwork";
 import Navbar from "@/components/Navbar";
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
 import { z } from "zod";
