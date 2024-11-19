@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Edit2, ExternalLink } from "lucide-react";
+import { Edit2, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
 import { getProfile } from "./actions";
 import { toast } from "sonner";
 import { EditProfileModal } from "@/components/EditProfileModal";
@@ -9,12 +9,47 @@ import { ChainLoader } from "@/components/ChainLoader";
 
 const ProfileSettingsPage = () => {
   const [profile, setProfile] = useState<any>(null);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editSection, setEditSection] = useState<string | null>(null);
+
+  const calculateProfileCompletion = (profileData: any) => {
+    const requiredFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "phoneNumber",
+      "country",
+      "city",
+      "bio",
+      "topSkills",
+      "currentProjects",
+      "personalInterests",
+      "topInterests",
+      "preferences",
+      "lookingFor",
+    ];
+
+    const completedFields = requiredFields.filter((field) => {
+      const value = profileData[field];
+      return (
+        value && (Array.isArray(value) ? value.length > 0 : value.trim() !== "")
+      );
+    });
+
+    return Math.round((completedFields.length / requiredFields.length) * 100);
+  };
 
   useEffect(() => {
     loadProfile();
   }, []);
+
+  useEffect(() => {
+    if (profile) {
+      const percentage = calculateProfileCompletion(profile);
+      setCompletionPercentage(percentage);
+    }
+  }, [profile]);
 
   const loadProfile = async () => {
     try {
@@ -32,7 +67,10 @@ const ProfileSettingsPage = () => {
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          isProfileComplete: completionPercentage === 100,
+        }),
       });
 
       if (!response.ok) throw new Error("Update failed");
@@ -60,6 +98,33 @@ const ProfileSettingsPage = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+      {/* Profile Completion Status */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold">Profile Completion</h3>
+          <span className="text-sm font-medium">{completionPercentage}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            className="bg-custom-blue h-2.5 rounded-full transition-all duration-500"
+            style={{ width: `${completionPercentage}%` }}
+          ></div>
+        </div>
+        {completionPercentage < 100 && (
+          <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-yellow-500" />
+            Complete your profile to increase visibility and connection
+            opportunities
+          </p>
+        )}
+        {completionPercentage === 100 && (
+          <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            Your profile is complete!
+          </p>
+        )}
+      </div>
+
       {/* Profile Header */}
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

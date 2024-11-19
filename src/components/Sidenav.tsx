@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { HiHome, HiUser, HiChatAlt2, HiCog } from "react-icons/hi";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { MdExplore, MdCampaign } from "react-icons/md";
@@ -13,8 +14,26 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
+interface UserData {
+  avatar: string | null;
+  subscriptionTier: string;
+}
+
 const Sidenav: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (session?.user?.email) {
+        const response = await fetch(`/api/users/${session.user.email}`);
+        const data = await response.json();
+        setUserData(data);
+      }
+    };
+    fetchUserData();
+  }, [session]);
 
   const navItems: NavItem[] = [
     { title: "Dashboard", path: "/dashboard", icon: <HiHome size={24} /> },
@@ -29,10 +48,20 @@ const Sidenav: React.FC = () => {
     },
     { title: "Promote", path: "/promote", icon: <MdCampaign size={24} /> },
     { title: "Settings", path: "/settings", icon: <HiCog size={24} /> },
-  ];
+  ].filter((item) => {
+    // Hide "Try Premium" if user has paid subscription
+    if (item.title === "Try Premium") {
+      return userData?.subscriptionTier === "FREE";
+    }
+    return true;
+  });
 
   const toggleSidenav = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/auth/login" });
   };
 
   return (
@@ -57,11 +86,7 @@ const Sidenav: React.FC = () => {
         {/* Logo */}
         <div className="border-b border-blue-300 p-4">
           <div className="flex items-center justify-center space-x-2">
-            <img
-              src="/logo-white.png"
-              className="w-[40px] h-[40px] object-contain"
-              alt="LoungeLink Logo"
-            />
+            <BiLinkAlt size={24} />
             <h1 className="text-2xl font-bold tracking-wider">LOUNGELINK</h1>
           </div>
         </div>
@@ -84,13 +109,25 @@ const Sidenav: React.FC = () => {
           </ul>
         </nav>
 
-        {/* Footer */}
+        {/* Updated Footer */}
         <div className="absolute bottom-0 w-full p-6 border-t border-blue-300">
           <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-full bg-gray-800"></div>
-            <div>
-              <p className="text-sm font-medium">User Name</p>
-              <p className="text-xs text-gray-400">Online</p>
+            {userData?.avatar ? (
+              <img
+                src={userData.avatar}
+                alt="Profile"
+                className="w-10 h-10 rounded-full"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-800"></div>
+            )}
+            <div className="flex-grow">
+              <p className="text-sm font-medium">
+                {session?.user?.name || "Guest User"}
+              </p>
+              <p className="text-xs text-white font-medium">
+                {userData?.subscriptionTier || "FREE"} Plan
+              </p>
             </div>
           </div>
         </div>

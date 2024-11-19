@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Toaster } from "react-hot-toast";
+import { Toaster as ReactHotToaster } from "react-hot-toast";
+import { Toaster as SonnerToaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import Providers from "@/components/Providers";
 
@@ -31,7 +32,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Toaster
+        <ReactHotToaster
           position="top-right"
           toastOptions={{
             style: {
@@ -42,6 +43,7 @@ export default function RootLayout({
             },
           }}
         />
+        <SonnerToaster position="top-center" />
         <Providers>{children}</Providers>
       </body>
     </html>

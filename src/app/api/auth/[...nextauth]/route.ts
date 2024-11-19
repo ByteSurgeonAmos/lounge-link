@@ -51,7 +51,6 @@ export const authOptions: NextAuthOptions = {
             rememberMe,
           } satisfies User;
         } catch (error) {
-          console.error("Auth error:", error);
           return null;
         }
       },

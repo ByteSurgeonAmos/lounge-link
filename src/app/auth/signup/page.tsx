@@ -7,17 +7,29 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
+import { z } from "zod";
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  phone: string;
-  jobTitle: string;
-  password: string;
-  confirmPassword: string;
-}
+const signupSchema = z
+  .object({
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    phone: z.string().regex(/^\+?[\d\s-]{10,}$/, "Invalid phone number"),
+    jobTitle: z.string().min(1, "Please select a job title"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+type FormData = z.infer<typeof signupSchema>;
 
 const SignUp = () => {
   const router = useRouter();
@@ -36,6 +48,10 @@ const SignUp = () => {
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [backendError, setBackendError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {}
+  );
+  const [progress, setProgress] = useState(0);
 
   const toastConfig = {
     success: {
@@ -50,14 +66,24 @@ const SignUp = () => {
     },
   };
 
+  const calculateProgress = (data: FormData) => {
+    const fields = Object.entries(data);
+    const filledFields = fields.filter(([_, value]) => value.length > 0);
+    return Math.round((filledFields.length / fields.length) * 100);
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+    setFormData((prev) => {
+      const newData = { ...prev, [id]: value };
+      setProgress(calculateProgress(newData));
+      return newData;
+    });
+
+    // Clear error when user starts typing
+    setErrors((prev) => ({ ...prev, [id]: "" }));
 
     if (id === "password" || id === "confirmPassword") {
       setPasswordMatch(
@@ -77,19 +103,14 @@ const SignUp = () => {
     setBackendError("");
     setIsLoading(true);
 
-    if (!passwordMatch) {
-      toast.error("Passwords do not match", toastConfig.error);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      // Validate form data
+      const validatedData = signupSchema.parse(formData);
+
       const response = await fetch("/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validatedData),
       });
 
       const data = await response.json();
@@ -99,26 +120,24 @@ const SignUp = () => {
           "Signup successful! Redirecting to login...",
           toastConfig.success
         );
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          username: "",
-          phone: "",
-          jobTitle: "",
-          password: "",
-          confirmPassword: "",
-        });
-        setTimeout(() => {
-          router.push("/auth/login");
-        }, 2000);
+        router.push("/auth/login");
       } else {
-        setBackendError(data.message || "Something went wrong");
-        toast.error(data.message || "Signup failed", toastConfig.error);
+        throw new Error(data.message || "Signup failed");
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("An unexpected error occurred", toastConfig.error);
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Partial<Record<keyof FormData, string>> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as keyof FormData] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast.error("Please fix the form errors", toastConfig.error);
+      } else if (error instanceof Error) {
+        setBackendError(error.message);
+        toast.error(error.message, toastConfig.error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,6 +163,12 @@ const SignUp = () => {
     <div>
       <Navbar />
       <div className="bg-gradient-to-r from-[#219abc] to-[#51c3da] text-white gap-3">
+        <div className="h-1 bg-white/20">
+          <div
+            className="h-full bg-green-500 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
         <div className="container mx-auto py-16 px-4 sm:px-6 gap-4 lg:px-8 flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 space-y-6">
             <h1 className="text-4xl font-bold">
@@ -179,8 +204,15 @@ const SignUp = () => {
                     type="text"
                     id="firstName"
                     placeholder="Enter your first name"
-                    className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full"
+                    className={`${
+                      errors.firstName ? "border-red-500" : ""
+                    } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full`}
                   />
+                  {errors.firstName && (
+                    <span className="text-red-300 text-sm mt-1">
+                      {errors.firstName}
+                    </span>
+                  )}
                 </div>
                 <div className="flex-1">
                   <label htmlFor="lastName" className="block mb-2 text-sm">
@@ -192,8 +224,15 @@ const SignUp = () => {
                     type="text"
                     id="lastName"
                     placeholder="Enter your last name"
-                    className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full"
+                    className={`${
+                      errors.lastName ? "border-red-500" : ""
+                    } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full`}
                   />
+                  {errors.lastName && (
+                    <span className="text-red-300 text-sm mt-1">
+                      {errors.lastName}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex-1">
@@ -206,8 +245,15 @@ const SignUp = () => {
                   type="email"
                   id="email"
                   placeholder="Enter your email address"
-                  className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full"
+                  className={`${
+                    errors.email ? "border-red-500" : ""
+                  } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full`}
                 />
+                {errors.email && (
+                  <span className="text-red-300 text-sm mt-1">
+                    {errors.email}
+                  </span>
+                )}
               </div>
               <div className="flex-1">
                 <label htmlFor="username" className="block mb-2 text-sm">
@@ -219,8 +265,15 @@ const SignUp = () => {
                   type="text"
                   id="username"
                   placeholder="Choose a username"
-                  className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full"
+                  className={`${
+                    errors.username ? "border-red-500" : ""
+                  } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full`}
                 />
+                {errors.username && (
+                  <span className="text-red-300 text-sm mt-1">
+                    {errors.username}
+                  </span>
+                )}
               </div>
               <div className="flex-1">
                 <label htmlFor="phone" className="block mb-2 text-sm">
@@ -232,8 +285,15 @@ const SignUp = () => {
                   type="tel"
                   id="phone"
                   placeholder="Enter your phone number"
-                  className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full"
+                  className={`${
+                    errors.phone ? "border-red-500" : ""
+                  } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full`}
                 />
+                {errors.phone && (
+                  <span className="text-red-300 text-sm mt-1">
+                    {errors.phone}
+                  </span>
+                )}
               </div>
               <div className="flex-1">
                 <label htmlFor="jobTitle" className="block mb-2 text-sm">
@@ -243,7 +303,9 @@ const SignUp = () => {
                   value={formData.jobTitle}
                   onChange={handleChange}
                   id="jobTitle"
-                  className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full"
+                  className={`${
+                    errors.jobTitle ? "border-red-500" : ""
+                  } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full`}
                 >
                   <option className="text-black" value="">
                     Choose from Dropdown
@@ -279,6 +341,11 @@ const SignUp = () => {
                     Business Person
                   </option>
                 </select>
+                {errors.jobTitle && (
+                  <span className="text-red-300 text-sm mt-1">
+                    {errors.jobTitle}
+                  </span>
+                )}
               </div>
               <div className="flex-1">
                 <label htmlFor="password" className="block mb-2 text-sm">
@@ -291,7 +358,9 @@ const SignUp = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter a strong password"
-                    className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full pr-10"
+                    className={`${
+                      errors.password ? "border-red-500" : ""
+                    } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full pr-10`}
                   />
                   <button
                     type="button"
@@ -312,6 +381,11 @@ const SignUp = () => {
                 >
                   {passwordStrength}
                 </span>
+                {errors.password && (
+                  <span className="text-red-300 text-sm mt-1">
+                    {errors.password}
+                  </span>
+                )}
               </div>
               <div className="flex-1">
                 <label htmlFor="confirmPassword" className="block mb-2 text-sm">
@@ -324,12 +398,19 @@ const SignUp = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Confirm your password"
-                    className="bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full pr-10"
+                    className={`${
+                      errors.confirmPassword ? "border-red-500" : ""
+                    } bg-white/20 text-white placeholder:text-white/70 indent-4 h-12 rounded-md focus:outline-none w-full pr-10`}
                   />
                 </div>
                 {!passwordMatch && formData.confirmPassword && (
                   <span className="text-red-500 text-sm mt-2">
                     Passwords do not match
+                  </span>
+                )}
+                {errors.confirmPassword && (
+                  <span className="text-red-300 text-sm mt-1">
+                    {errors.confirmPassword}
                   </span>
                 )}
               </div>

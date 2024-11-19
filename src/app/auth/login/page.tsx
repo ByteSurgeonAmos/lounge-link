@@ -7,7 +7,9 @@ import React, { useState } from "react";
 import { FaPhone, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
+import { ChainLoader } from "@/components/ChainLoader";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -22,6 +24,7 @@ const LoginPage = () => {
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect if already authenticated
   React.useEffect(() => {
@@ -84,9 +87,17 @@ const LoginPage = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   // Show loading state while checking session
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center w-full h-[100vh] items-center">
+        <ChainLoader />
+      </div>
+    );
   }
 
   const getInputPlaceholder = () => {
@@ -114,7 +125,7 @@ const LoginPage = () => {
   return (
     <div className="">
       <Navbar />
-      <div className="flex bg-gradient-to-r from-[#219abc] to-[#51c3da] h-screen p-8 text-white gap-9">
+      <div className="flex bg-gradient-to-r from-[#219abc] to-[#51c3da] min-h-screen p-8 text-white gap-9">
         <div className="w-full flex flex-col justify-center">
           <p className="text-4xl font-bold mb-2">LATTELINK</p>
           <p className="text-lg mb-8">
@@ -127,44 +138,89 @@ const LoginPage = () => {
               Please sign in before continuing
             </p>
             <form onSubmit={handleLogin} className="space-y-4 text-black">
-              <input
-                type={getInputType()}
-                name="identifier"
-                placeholder={getInputPlaceholder()}
-                value={formData.identifier}
-                onChange={handleInputChange}
-                className="bg-white placeholder:text-[#219abc] indent-4 h-12 rounded-full focus:outline-none w-full"
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="bg-white placeholder:text-[#219abc] indent-4 h-12 rounded-full focus:outline-none w-full"
-              />
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
+              <div className="relative">
+                <input
+                  type={getInputType()}
+                  name="identifier"
+                  placeholder={getInputPlaceholder()}
+                  value={formData.identifier}
+                  onChange={handleInputChange}
+                  className="bg-white placeholder:text-[#219abc] indent-4 h-12 rounded-full focus:outline-none focus:ring-2 focus:ring-[#219abc] w-full transition-all duration-200"
+                />
+              </div>
+
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="bg-white placeholder:text-[#219abc] indent-4 h-12 rounded-full focus:outline-none focus:ring-2 focus:ring-[#219abc] w-full pr-12 transition-all duration-200"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <AiOutlineEyeInvisible size={20} />
+                  ) : (
+                    <AiOutlineEye size={20} />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex justify-between items-center text-white">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     name="rememberMe"
-                    id="remember-me"
                     checked={formData.rememberMe}
                     onChange={handleInputChange}
-                    className="h-4 w-4"
+                    className="h-4 w-4 rounded border-gray-300 focus:ring-[#219abc]"
                   />
-                  <p className="text-sm">Remember me</p>
-                </div>
-                <p className="text-sm underline">Forgot Password?</p>
+                  <span className="text-sm">Remember me</span>
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm hover:underline"
+                >
+                  Forgot Password?
+                </Link>
               </div>
+
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`bg-[#219abc] text-white font-bold py-3 px-6 rounded-full w-full hover:bg-[#28b0d2] transition-colors duration-300 ${
-                  isLoading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`bg-[#219abc] text-white font-bold py-3 px-6 rounded-full w-full 
+                hover:bg-[#28b0d2] transition-all duration-300 transform hover:scale-105
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#219abc]
+                ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                {isLoading ? "Logging in..." : "LOGIN"}
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Logging in...
+                  </span>
+                ) : (
+                  "LOGIN"
+                )}
               </button>
               <div className="flex items-center justify-center gap-3">
                 <p className="text-sm">Don't have an account?</p>

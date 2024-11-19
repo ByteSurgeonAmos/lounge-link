@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import BlogSection from "@/components/dashbboard/BlogSection";
 import CompleteProfile from "@/components/dashbboard/CompleteProfile";
 import PremiumCard from "@/components/dashbboard/PremiumCard";
@@ -9,8 +10,16 @@ import UpcomingEvents from "@/components/dashbboard/UpcomingEvents";
 
 export default function DashboardClient() {
   const { data: session } = useSession();
+  const [profile, setProfile] = useState<any>(null);
 
-  console.log("Session in DashboardClient:", session);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const response = await fetch("/api/profile");
+      const data = await response.json();
+      setProfile(data);
+    };
+    fetchProfile();
+  }, []);
 
   const handleUpgrade = () => {
     console.log("Redirecting to upgrade page");
@@ -31,7 +40,7 @@ export default function DashboardClient() {
         </div>
         <div className="flex flex-col lg:flex-row gap-4 max-w-full">
           <div className="flex flex-col w-full lg:w-auto gap-4">
-            <CompleteProfile />
+            {!profile?.isProfileComplete && <CompleteProfile />}
             <BlogSection />
             <UpcomingEvents />
           </div>
@@ -39,9 +48,11 @@ export default function DashboardClient() {
             <div className="border shadow-lg">
               <QuickLinks />
             </div>
-            <div className="">
-              <PremiumCard onUpgradeClick={handleUpgrade} />
-            </div>
+            {profile?.subscriptionTier === "FREE" && (
+              <div className="">
+                <PremiumCard onUpgradeClick={handleUpgrade} />
+              </div>
+            )}
           </div>
         </div>
       </div>

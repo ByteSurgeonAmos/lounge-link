@@ -19,14 +19,64 @@ const ProfileUpdateSchema = z
     designation: z.string().nullable().optional(),
     country: z.string().nullable().optional(),
     city: z.string().nullable().optional(),
-    personalInterests: z.array(z.string()).optional(),
-    topSkills: z.array(z.string()).optional(),
-    linkPreferences: z.array(z.string()).optional(),
-    lookingFor: z.array(z.string()).optional(),
-    topInterests: z.array(z.string()).optional(),
-    currentProjects: z.array(z.string()).optional(),
+    personalInterests: z.array(z.string()).default([]),
+    topSkills: z.array(z.string()).default([]),
+    linkPreferences: z.array(z.string()).default([]), // Changed from preferences
+    lookingFor: z.array(z.string()).default([]),
+    topInterests: z.array(z.string()).default([]),
+    currentProjects: z.array(z.string()).default([]),
+    isProfileComplete: z.boolean().default(false),
   })
-  .partial();
+  .passthrough()
+  .partial(); // Allow additional fields
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        phoneNumber: true,
+        avatar: true,
+        bio: true,
+        quote: true,
+        designation: true,
+        country: true,
+        city: true,
+        personalInterests: true,
+        topSkills: true,
+        linkPreferences: true,
+        lookingFor: true,
+        topInterests: true,
+        currentProjects: true,
+        isProfileComplete: true,
+        subscriptionTier: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Profile fetch error:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch profile" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PUT(request: Request) {
   const session = await getServerSession(authOptions);
@@ -38,7 +88,6 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const validatedData = ProfileUpdateSchema.parse(body);
-
     const updatedUser = await prisma.user.update({
       where: { email: session.user?.email },
       data: validatedData,
@@ -61,6 +110,7 @@ export async function PUT(request: Request) {
         lookingFor: true,
         topInterests: true,
         currentProjects: true,
+        isProfileComplete: true,
       },
     });
 

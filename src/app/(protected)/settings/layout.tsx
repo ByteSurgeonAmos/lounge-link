@@ -2,6 +2,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { toast } from "sonner";
 
 const SettingsLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -12,13 +14,39 @@ const SettingsLayout = ({ children }: { children: React.ReactNode }) => {
     { title: "Notifications", path: "/settings/notifications" },
     { title: "Billing", path: "/settings/billing" },
     { title: "Privacy Policy", path: "/settings/privacy" },
-    { title: "Sign Out", path: "/settings/signout" },
-    {
-      title: "Delete Account",
-      path: "/settings/delete-account",
-      className: "text-red-500",
-    },
   ];
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/auth/login" });
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+
+    if (confirmed) {
+      try {
+        toast.loading("Deleting account...");
+        const response = await fetch("/api/users/delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          toast.success("Account deleted successfully");
+          signOut({ callbackUrl: "/auth/login" });
+        } else {
+          toast.error("Failed to delete account. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting account:", error);
+        toast.error("An error occurred while deleting your account.");
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
@@ -36,12 +64,24 @@ const SettingsLayout = ({ children }: { children: React.ReactNode }) => {
                       pathname === item.path
                         ? "bg-gray-100 font-medium text-custom-blue"
                         : ""
-                    } ${item.className || ""}`}
+                    } `}
                   >
                     {item.title}
                   </div>
                 </Link>
               ))}
+              <button
+                onClick={handleLogout}
+                className="w-full text-left py-2 px-4 rounded-md cursor-pointer mb-1 hover:bg-gray-50"
+              >
+                Sign Out
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="w-full text-left py-2 px-4 rounded-md cursor-pointer mb-1 hover:bg-gray-50 text-red-500"
+              >
+                Delete Account
+              </button>
             </nav>
           </div>
 

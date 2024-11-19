@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 import { FaUser, FaUserAstronaut } from "react-icons/fa";
 
@@ -17,9 +18,11 @@ const CompleteProfile: React.FC<CompleteProfileProps> = () => {
           Stand Out and attract meaningful connections by fully completing your
           profile. Let people know What You are about.
         </div>
-        <button className="bg-white text-custom-blue rounded-xl w-[10rem] h-[3rem] font-medium">
-          Get Started
-        </button>
+        <Link href="/settings">
+          <button className="bg-white text-custom-blue rounded-xl w-[10rem] h-[3rem] font-medium">
+            Get Started
+          </button>
+        </Link>
       </div>
       {/* Add your component content here */}
     </div>
