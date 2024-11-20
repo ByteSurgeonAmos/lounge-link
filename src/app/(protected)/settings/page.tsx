@@ -17,24 +17,27 @@ const ProfileSettingsPage = () => {
     const requiredFields = [
       "firstName",
       "lastName",
-      "email",
       "phoneNumber",
       "country",
       "city",
       "bio",
+      "quote",
+      "designation",
+      "avatar",
       "topSkills",
       "currentProjects",
       "personalInterests",
       "topInterests",
-      "preferences",
+      "linkPreferences",
       "lookingFor",
     ];
 
     const completedFields = requiredFields.filter((field) => {
       const value = profileData[field];
-      return (
-        value && (Array.isArray(value) ? value.length > 0 : value.trim() !== "")
-      );
+      if (!value) return false;
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === "string") return value.trim() !== "";
+      return true;
     });
 
     return Math.round((completedFields.length / requiredFields.length) * 100);
@@ -55,6 +58,7 @@ const ProfileSettingsPage = () => {
     try {
       const data = await getProfile();
       setProfile(data);
+      // console.log(data);
     } catch (error) {
       toast.error("Failed to load profile");
     } finally {
@@ -325,7 +329,7 @@ const ProfileSettingsPage = () => {
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
-          {profile?.preferences?.map((pref: string) => (
+          {profile?.linkPreferences?.map((pref: string) => (
             <span
               key={pref}
               className="px-3 py-1 bg-custom-blue text-white rounded-full text-sm"

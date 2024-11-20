@@ -7,16 +7,23 @@ import CompleteProfile from "@/components/dashbboard/CompleteProfile";
 import PremiumCard from "@/components/dashbboard/PremiumCard";
 import QuickLinks from "@/components/dashbboard/QuickLinks";
 import UpcomingEvents from "@/components/dashbboard/UpcomingEvents";
+import CreateFirstPost from "@/components/dashbboard/CreateFirstPost";
 
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [profile, setProfile] = useState<any>(null);
+  const [hasFirstPost, setHasFirstPost] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       const response = await fetch("/api/profile");
       const data = await response.json();
       setProfile(data);
+
+      // Check if user has any posts
+      // const postsResponse = await fetch("/api/posts");
+      // const postsData = await postsResponse.json();
+      setHasFirstPost(false);
     };
     fetchProfile();
   }, []);
@@ -40,7 +47,11 @@ export default function DashboardClient() {
         </div>
         <div className="flex flex-col lg:flex-row gap-4 max-w-full">
           <div className="flex flex-col w-full lg:w-auto gap-4">
-            {!profile?.isProfileComplete && <CompleteProfile />}
+            {!profile?.isProfileComplete ? (
+              <CompleteProfile />
+            ) : !hasFirstPost ? (
+              <CreateFirstPost />
+            ) : null}
             <BlogSection />
             <UpcomingEvents />
           </div>

@@ -55,6 +55,7 @@ export function EditProfileModal({
   initialData,
 }: EditProfileModalProps) {
   const [isUploading, setIsUploading] = useState(false);
+
   // Transform initial data to ensure all fields have defined values
   const defaultValues = {
     firstName: initialData?.firstName || "",
@@ -82,6 +83,28 @@ export function EditProfileModal({
   useEffect(() => {
     form.reset(defaultValues);
   }, [initialData]);
+
+  // Local state for array input values
+  const [arrayInputs, setArrayInputs] = useState({
+    topSkills: (initialData.topSkills || []).join(", "),
+    personalInterests: (initialData.personalInterests || []).join(", "),
+    topInterests: (initialData.topInterests || []).join(", "),
+    currentProjects: (initialData.currentProjects || []).join(", "),
+    linkPreferences: (initialData.linkPreferences || []).join(", "),
+    lookingFor: (initialData.lookingFor || []).join(", "),
+  });
+
+  // Update local state when the form resets
+  useEffect(() => {
+    setArrayInputs({
+      topSkills: (form.getValues("topSkills") || []).join(", "),
+      personalInterests: (form.getValues("personalInterests") || []).join(", "),
+      topInterests: (form.getValues("topInterests") || []).join(", "),
+      currentProjects: (form.getValues("currentProjects") || []).join(", "),
+      linkPreferences: (form.getValues("linkPreferences") || []).join(", "),
+      lookingFor: (form.getValues("lookingFor") || []).join(", "),
+    });
+  }, [initialData, section]);
 
   // Add file input ref
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -272,31 +295,33 @@ export function EditProfileModal({
         );
       case "skills":
         return (
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="topSkills"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Top Skills (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={(field.value || []).join(", ")}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="topSkills"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Top Skills (comma-separated)</FormLabel>
+                <FormControl>
+                  <Input
+                    value={arrayInputs.topSkills}
+                    onChange={(e) =>
+                      setArrayInputs({
+                        ...arrayInputs,
+                        topSkills: e.target.value,
+                      })
+                    }
+                    onBlur={() => {
+                      const values = arrayInputs.topSkills
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      field.onChange(values);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         );
       case "interests":
         return (
@@ -309,16 +334,20 @@ export function EditProfileModal({
                   <FormLabel>Personal Interests (comma-separated)</FormLabel>
                   <FormControl>
                     <Input
-                      {...field}
-                      value={field.value?.join(", ") || ""}
+                      value={arrayInputs.personalInterests}
                       onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
+                        setArrayInputs({
+                          ...arrayInputs,
+                          personalInterests: e.target.value,
+                        })
                       }
+                      onBlur={() => {
+                        const values = arrayInputs.personalInterests
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        field.onChange(values);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -332,16 +361,20 @@ export function EditProfileModal({
                   <FormLabel>Top Interests (comma-separated)</FormLabel>
                   <FormControl>
                     <Input
-                      {...field}
-                      value={field.value?.join(", ") || ""}
+                      value={arrayInputs.topInterests}
                       onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
+                        setArrayInputs({
+                          ...arrayInputs,
+                          topInterests: e.target.value,
+                        })
                       }
+                      onBlur={() => {
+                        const values = arrayInputs.topInterests
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        field.onChange(values);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -351,87 +384,93 @@ export function EditProfileModal({
         );
       case "projects":
         return (
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="currentProjects"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current Projects (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={field.value?.join(", ") || ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="currentProjects"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Current Projects (comma-separated)</FormLabel>
+                <FormControl>
+                  <Input
+                    value={arrayInputs.currentProjects}
+                    onChange={(e) =>
+                      setArrayInputs({
+                        ...arrayInputs,
+                        currentProjects: e.target.value,
+                      })
+                    }
+                    onBlur={() => {
+                      const values = arrayInputs.currentProjects
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      field.onChange(values);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         );
       case "preferences":
         return (
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="linkPreferences"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Link Preferences (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={field.value?.join(", ") || ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="linkPreferences"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link Preferences (comma-separated)</FormLabel>
+                <FormControl>
+                  <Input
+                    value={arrayInputs.linkPreferences}
+                    onChange={(e) =>
+                      setArrayInputs({
+                        ...arrayInputs,
+                        linkPreferences: e.target.value,
+                      })
+                    }
+                    onBlur={() => {
+                      const values = arrayInputs.linkPreferences
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      field.onChange(values);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         );
       case "lookingFor":
         return (
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="lookingFor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Looking For (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={field.value?.join(", ") || ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="lookingFor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Looking For (comma-separated)</FormLabel>
+                <FormControl>
+                  <Input
+                    value={arrayInputs.lookingFor}
+                    onChange={(e) =>
+                      setArrayInputs({
+                        ...arrayInputs,
+                        lookingFor: e.target.value,
+                      })
+                    }
+                    onBlur={() => {
+                      const values = arrayInputs.lookingFor
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      field.onChange(values);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         );
       default:
         return null;
