@@ -12,6 +12,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useRouter } from "next/navigation";
+import SuggestedLinks from "./SuggestedLinks";
 
 const QuickLinks: React.FC = () => {
   const router = useRouter();
@@ -74,7 +75,7 @@ const QuickLinks: React.FC = () => {
       description: "Confirm your email address for account security",
       action: handleVerifyEmail,
     },
-    {
+    !profile?.isPhoneVerified && {
       title: "Verify Phone Number",
       icon: <PhoneIcon />,
       description: "Add your phone number for additional security",
@@ -87,6 +88,11 @@ const QuickLinks: React.FC = () => {
       action: () => router.push("settings/notifications"),
     },
   ].filter(Boolean);
+
+  // Return suggested links first
+  if (profile?.isVerified && profile?.isPhoneVerified) {
+    return <SuggestedLinks />;
+  }
 
   return (
     <Box className="bg-custom-blue text-white" sx={{ p: 2 }}>

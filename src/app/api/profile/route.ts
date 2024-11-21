@@ -62,6 +62,7 @@ export async function GET() {
         isProfileComplete: true,
         subscriptionTier: true,
         isVerified: true,
+        isPhoneVerified: true,
       },
     });
 

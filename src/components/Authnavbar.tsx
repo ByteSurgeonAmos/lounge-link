@@ -226,7 +226,7 @@ const AuthNavbar: React.FC<AuthNavbarProps> = ({
 
           {/* User section - Updated */}
           {isAuthenticated ? (
-            <div className="mt-8 px-4 pt-4 border-t border-blue-700">
+            <div className="mt-8 px-4 pt-4 border-t border-white">
               <div className="flex items-center space-x-3 mb-4">
                 {userData?.avatar ? (
                   <img
