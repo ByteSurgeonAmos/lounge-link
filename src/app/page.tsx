@@ -1,3 +1,4 @@
+"use client";
 import ConnectAndGrowComponent from "@/components/Connect";
 import EventsPage from "@/components/EventsPage";
 import Footer from "@/components/Footer";
