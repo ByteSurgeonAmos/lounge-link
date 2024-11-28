@@ -44,7 +44,7 @@ const AuthNavbar: React.FC<AuthNavbarProps> = ({
   useEffect(() => {
     const fetchUserData = async () => {
       if (session?.user?.email) {
-        const response = await fetch(`/api/users/${session.user.email}`);
+        const response = await fetch("/api/user");
         const data = await response.json();
         setUserData(data);
       }

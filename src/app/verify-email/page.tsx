@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Box, Paper, Typography, CircularProgress } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -22,7 +22,7 @@ const StyledPaper = styled(Paper)({
   textAlign: "center",
 });
 
-export default function VerifyEmail() {
+function EmailVerificationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
@@ -80,23 +80,33 @@ export default function VerifyEmail() {
   }
 
   return (
+    <>
+      {status === "loading" && <CircularProgress sx={{ marginBottom: 2 }} />}
+      {status === "success" && (
+        <CheckCircleIcon
+          sx={{ fontSize: 60, color: "success.main", marginBottom: 2 }}
+        />
+      )}
+      {status === "error" && (
+        <ErrorIcon
+          sx={{ fontSize: 60, color: "error.main", marginBottom: 2 }}
+        />
+      )}
+      <Typography variant="h5" gutterBottom>
+        Email Verification
+      </Typography>
+      <Typography color="text.secondary">{message}</Typography>
+    </>
+  );
+}
+
+export default function VerifyEmail() {
+  return (
     <StyledBox>
       <StyledPaper elevation={3}>
-        {status === "loading" && <CircularProgress sx={{ marginBottom: 2 }} />}
-        {status === "success" && (
-          <CheckCircleIcon
-            sx={{ fontSize: 60, color: "success.main", marginBottom: 2 }}
-          />
-        )}
-        {status === "error" && (
-          <ErrorIcon
-            sx={{ fontSize: 60, color: "error.main", marginBottom: 2 }}
-          />
-        )}
-        <Typography variant="h5" gutterBottom>
-          Email Verification
-        </Typography>
-        <Typography color="text.secondary">{message}</Typography>
+        <Suspense fallback={<CircularProgress />}>
+          <EmailVerificationContent />
+        </Suspense>
       </StyledPaper>
     </StyledBox>
   );
