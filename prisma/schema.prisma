@@ -23,6 +23,7 @@ model User {
   username      String    @unique
   phoneNumber   String?   @unique
   avatar        String?
+  backgroundImage String?
   bio          String?   @db.Text
   quote        String?   @db.Text
   designation  String?   
@@ -40,12 +41,16 @@ model User {
   linkPreferences  String[]  @default([])
   lookingFor       String[]  @default([])
   topInterests     String[]  @default([])
-  currentProjects  String[]  @default([])
+  currentProjects  String[]  @default([]) 
   isSubscribed        Boolean   @default(false)
   subscriptionEndDate DateTime?
   subscriptionTier    SubscriptionTier @default(FREE)
   subscription        Subscription?
   isProfileComplete Boolean   @default(false)
+  badges         Badge[]
+  collaborations Collaboration[]
+  endorsements   Endorsement[]
+  endorsementsGiven Endorsement[] @relation("EndorsementGiver")
 }
 
 enum Role {
@@ -83,4 +88,34 @@ model VerificationToken {
   createdAt  DateTime @default(now())
 
   @@unique([identifier, token])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Collaboration {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  avatar      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Endorsement {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  giverId     String
+  giver       User     @relation("EndorsementGiver", fields: [giverId], references: [id])
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
