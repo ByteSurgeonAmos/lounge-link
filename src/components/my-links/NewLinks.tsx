@@ -1,28 +1,16 @@
 // src/components/my-links/NewLinks.tsx
 import React from "react";
 
-const NewLinks: React.FC = () => {
-  const links = [
-    {
-      name: "Alfredo Torres",
-      role: "Founder at GripCo, NBO Kenya",
-      connections: "John Doe, Jane Doe & Claudia Alvis",
-      image: "/path-to-alfredo-torres-image.jpg",
-    },
-    {
-      name: "John Doe",
-      role: "Marketing Strategist at Event Findr, Accra Ghana",
-      connections: "John Doe, Jane Doe & Claudia Alvis",
-      image: "/path-to-john-doe-image.jpg",
-    },
-    {
-      name: "Jane Doe",
-      role: "Managing Director Eagle Blaze, Cairo Egypt",
-      connections: "John Doe, Jane Doe & Claudia Alvis",
-      image: "/path-to-jane-doe-image.jpg",
-    },
-  ];
+interface NewLinksProps {
+  links: {
+    name: string;
+    role: string;
+    connections: string;
+    image: string;
+  }[];
+}
 
+const NewLinks: React.FC<NewLinksProps> = ({ links }) => {
   return (
     <div className="bg-white shadow-sm rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
@@ -36,13 +24,11 @@ const NewLinks: React.FC = () => {
             className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow hover:shadow-md transition-shadow"
           >
             <div className="flex items-center space-x-4">
-              {/* Profile Image */}
               <img
                 src={link.image}
                 alt={link.name}
                 className="w-12 h-12 rounded-full border border-gray-200"
               />
-              {/* Details */}
               <div>
                 <h4 className="text-sm font-medium">{link.name}</h4>
                 <p className="text-xs text-gray-600">{link.role}</p>
