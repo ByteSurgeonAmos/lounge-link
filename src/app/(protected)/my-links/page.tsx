@@ -1,12 +1,23 @@
 // src/app/(protected)/my-links/page.tsx
-import React from "react";
+"use client";
+
+import { useSessionContext } from "@/context/SessionContext";
 import NewLinks from "@/components/my-links/NewLinks";
 import ExplorePeople from "@/components/my-links/ExplorePeople";
 import ManageLinks from "@/components/my-links/ManageLinks";
 import PremiumCard from "@/components/dashbboard/PremiumCard";
+import Discussions from "@/components/my-links/Discussions";
 
 const MyLinksPage: React.FC = () => {
-  // Centralized data
+  const { profile } = useSessionContext();
+
+  // Milestone data
+  const milestoneData = {
+    discussions: 10,
+    badges: 5,
+    endorsements: 3,
+  };
+
   const newLinksData = [
     {
       name: "Alfredo Torres",
@@ -67,16 +78,20 @@ const MyLinksPage: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-1 p-6">
-        {/* Pass data to NewLinks */}
         <NewLinks links={newLinksData} />
-
-        {/* Pass data to ExplorePeople */}
         <ExplorePeople people={explorePeopleData} />
       </div>
       <div className="lg:w-80 p-6">
-        {/* Pass data to ManageLinks */}
         <ManageLinks links={manageLinksData} />
-        <PremiumCard />
+        {profile?.subscriptionTier === "FREE" ? (
+          <Discussions
+            discussions={milestoneData.discussions}
+            badges={milestoneData.badges}
+            endorsements={milestoneData.endorsements}
+          />
+        ) : (
+          <PremiumCard />
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSessionContext } from "@/context/SessionContext";
 import Sidenav from "@/components/Sidenav";
 import AuthNavbar from "@/components/Authnavbar";
 import { ChainLoader } from "@/components/ChainLoader";
@@ -12,20 +12,19 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { session, loading } = useSessionContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!loading && !session?.isAuthenticated) {
       router.push("/auth/login");
     }
-  }, [status, router]);
+  }, [loading, session, router]);
 
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        {/* <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div> */}
-        <div className="">
+        <div>
           <ChainLoader />
         </div>
       </div>
@@ -38,11 +37,11 @@ export default function ProtectedLayout({
       <div className="flex-1 md:ml-64 w-full fixed z-50">
         <AuthNavbar
           userName={session?.user?.name || "Guest"}
-          isAuthenticated={!!session}
+          isAuthenticated={!!session?.isAuthenticated}
         />
       </div>
       <main className="md:ml-64 pt-16">
-        <div className="">{children}</div>
+        <div>{children}</div>
       </main>
     </div>
   );

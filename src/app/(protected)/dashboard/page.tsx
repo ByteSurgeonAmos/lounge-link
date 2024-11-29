@@ -1,7 +1,10 @@
+// src/app/(protected)/dashboard/page.tsx
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSnackbar } from "notistack"; // Import from notistack
+import { useSessionContext } from "@/context/SessionContext";
 import BlogSection from "@/components/dashbboard/BlogSection";
 import CompleteProfile from "@/components/dashbboard/CompleteProfile";
 import PremiumCard from "@/components/dashbboard/PremiumCard";
@@ -10,35 +13,30 @@ import UpcomingEvents from "@/components/dashbboard/UpcomingEvents";
 import CreateFirstPost from "@/components/dashbboard/CreateFirstPost";
 
 export default function DashboardClient() {
-  const { data: session } = useSession();
-  const [profile, setProfile] = useState<any>(null);
-  const [hasFirstPost, setHasFirstPost] = useState<boolean>(false);
+  const { session, profile, hasFirstPost, loading } = useSessionContext();
+  const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const response = await fetch("/api/profile");
-      const data = await response.json();
-      setProfile(data);
-
-      // Check if user has any posts
-      // const postsResponse = await fetch("/api/posts");
-      // const postsData = await postsResponse.json();
-      setHasFirstPost(false);
-    };
-    fetchProfile();
-  }, []);
+    if (!loading && !session?.isAuthenticated) {
+      enqueueSnackbar("To access your dashboard, you need to log in.", { variant: "warning" });
+      router.push("/auth/login");
+    }
+  }, [loading, session, enqueueSnackbar, router]);
 
   const handleUpgrade = () => {
     console.log("Redirecting to upgrade page");
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (!session?.isAuthenticated) return null; // Redirect happens in useEffect
 
   return (
     <main className="p-4 md:p-8">
       <div className="container mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl font-medium text-black">
-            Welcome {session?.user?.name || "User"}! Ready to make some new
-            links?
+            Welcome {session.user?.name || "User"}! Ready to make some new links?
           </h1>
           <button className="flex bg-custom-blue w-fit justify-center items-center p-3 rounded-xl text-white font-semibold h-[3rem]">
             Explore new links{" "}
