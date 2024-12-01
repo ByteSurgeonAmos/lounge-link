@@ -65,6 +65,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
+  const upcoming = searchParams.get("upcoming") === "true";
   const skip = (page - 1) * limit;
 
   if (!session?.user?.email) {
@@ -72,9 +73,18 @@ export async function GET(request: Request) {
   }
 
   try {
+    const where = {
+      isPublic: true,
+      ...(upcoming && {
+        startDate: {
+          gte: new Date(),
+        },
+      }),
+    };
+
     const [liveLinks, total] = await Promise.all([
       prisma.liveLink.findMany({
-        where: { isPublic: true },
+        where,
         include: {
           author: {
             select: {
@@ -84,13 +94,11 @@ export async function GET(request: Request) {
             },
           },
         },
-        orderBy: { date: "asc" },
+        orderBy: { startDate: "asc" },
         skip,
         take: limit,
       }),
-      prisma.liveLink.count({
-        where: { isPublic: true },
-      }),
+      prisma.liveLink.count({ where }),
     ]);
 
     return NextResponse.json({
