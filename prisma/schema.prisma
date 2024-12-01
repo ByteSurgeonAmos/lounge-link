@@ -14,46 +14,47 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  password      String
-  firstName     String?
-  lastName      String?
-  username      String    @unique
-  phoneNumber   String?   @unique
-  avatar        String?
-  backgroundImage String?
-  bio          String?   @db.Text
-  quote        String?   @db.Text
-  designation  String?   
-  country      String?   
-  city         String?   
-  role         Role      @default(USER)
-  isVerified   Boolean   @default(false)
-  isPhoneVerified   Boolean   @default(false)
-  phoneOtp   String?   @unique
-  lastLogin    DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  personalInterests String[]  @default([])
-  topSkills        String[]  @default([])
-  linkPreferences  String[]  @default([])
-  lookingFor       String[]  @default([])
-  topInterests     String[]  @default([])
-  currentProjects  String[]  @default([]) 
-  isSubscribed        Boolean   @default(false)
+  id                  String             @id @default(cuid())
+  email               String             @unique
+  emailVerified       DateTime?
+  password            String
+  firstName           String?
+  lastName            String?
+  username            String             @unique
+  phoneNumber         String?            @unique
+  avatar              String?
+  backgroundImage     String?
+  bio                 String?            @db.Text
+  quote               String?            @db.Text
+  designation         String?
+  country             String?
+  city                String?
+  role                Role               @default(USER)
+  isVerified          Boolean            @default(false)
+  isPhoneVerified     Boolean            @default(false)
+  phoneOtp            String?            @unique
+  lastLogin           DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  personalInterests   String[]           @default([])
+  topSkills           String[]           @default([])
+  linkPreferences     String[]           @default([])
+  lookingFor          String[]           @default([])
+  topInterests        String[]           @default([])
+  currentProjects     String[]           @default([])
+  isSubscribed        Boolean            @default(false)
   subscriptionEndDate DateTime?
-  subscriptionTier    SubscriptionTier @default(FREE)
+  subscriptionTier    SubscriptionTier   @default(FREE)
   subscription        Subscription?
-  isProfileComplete Boolean   @default(false)
-  badges         Badge[]
-  collaborations Collaboration[]
-  endorsements   Endorsement[]
-  endorsementsGiven Endorsement[] @relation("EndorsementGiver")
-  posts          Post[]
-  liveLinks      LiveLink[]
-  reviews        Review[]
+  isProfileComplete   Boolean            @default(false)
+  badges              Badge[]
+  collaborations      Collaboration[]
+  endorsements        Endorsement[]
+  endorsementsGiven   Endorsement[]      @relation("EndorsementGiver")
+  posts               Post[]
+  liveLinks           LiveLink[]
+  reviews             Review[]
+  LiveLinkAttendee    LiveLinkAttendee[]
 }
 
 enum Role {
@@ -70,18 +71,18 @@ enum SubscriptionTier {
 }
 
 model Subscription {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
+  id              String           @id @default(cuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id])
   tier            SubscriptionTier
-  startDate       DateTime  @default(now())
+  startDate       DateTime         @default(now())
   endDate         DateTime
-  autoRenew       Boolean   @default(true)
+  autoRenew       Boolean          @default(true)
   paymentStatus   String
   lastPaymentDate DateTime?
   amount          Float
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model VerificationToken {
@@ -94,22 +95,22 @@ model VerificationToken {
 }
 
 model Badge {
-  id          String   @id @default(cuid())
-  name        String
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Collaboration {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  name        String
-  avatar      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Endorsement {
@@ -124,52 +125,69 @@ model Endorsement {
 }
 
 model Post {
-  id          String    @id @default(cuid())
-  title       String
-  content     String    @db.Text
-  image       String?
-  mentions    String[]
-  likes       Int       @default(0)
-  comments    Int       @default(0)
-  reposts     Int       @default(0)
-  shares      Int       @default(0)
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  image     String?
+  mentions  String[]
+  likes     Int      @default(0)
+  comments  Int      @default(0)
+  reposts   Int      @default(0)
+  shares    Int      @default(0)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model LiveLink {
-  id          String    @id @default(cuid())
-  title       String
-  description String    @db.Text
-  date        DateTime
-  location    String?
+  id           String             @id @default(cuid())
+  title        String
+  description  String             @db.Text
+  startDate    DateTime           @db.Timestamptz
+  endDate      DateTime           @db.Timestamptz
+  location     String?
   maxAttendees Int?
-  isPublic    Boolean   @default(false)
-  status      LiveLinkStatus @default(UPCOMING)
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isPublic     Boolean            @default(false)
+  status       LiveLinkStatus     @default(UPCOMING)
+  authorId     String
+  author       User               @relation(fields: [authorId], references: [id])
+  attendees    LiveLinkAttendee[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @default(now())
+
+  @@index([authorId])
+  @@index([startDate])
+}
+
+model LiveLinkAttendee {
+  id         String         @id @default(cuid())
+  liveLinkId String
+  liveLink   LiveLink       @relation(fields: [liveLinkId], references: [id])
+  userId     String
+  user       User           @relation(fields: [userId], references: [id])
+  status     AttendeeStatus @default(PENDING)
+  createdAt  DateTime       @default(now())
+
+  @@unique([liveLinkId, userId])
 }
 
 model Blog {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  description String    @db.Text
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Review {
-  id          String    @id @default(cuid())
-  text        String    @db.Text
-  stars       Int       @default(5)
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  stars     Int      @default(5)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum LiveLinkStatus {
@@ -177,4 +195,10 @@ enum LiveLinkStatus {
   ACTIVE
   COMPLETED
   CANCELLED
+}
+
+enum AttendeeStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
 }
