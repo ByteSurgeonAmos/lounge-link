@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { authOptions } from "../auth/[...nextauth]/authConfig";
 import { z } from "zod";
-
-const prisma = new PrismaClient();
 
 const LiveLinkSchema = z.object({
   title: z.string().min(1),

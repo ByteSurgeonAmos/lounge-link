@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { z } from "zod";
 import { authOptions } from "../auth/[...nextauth]/authConfig";
-
-const prisma = new PrismaClient();
 
 const ReviewSchema = z.object({
   text: z.string().min(1),

@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/authConfig";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import type { FeedPost } from "@/types/feed";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/db";
 
 const PostCreateSchema = z.object({
   title: z.string().min(1),
