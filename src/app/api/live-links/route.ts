@@ -7,7 +7,8 @@ import { z } from "zod";
 const LiveLinkSchema = z.object({
   title: z.string().min(1),
   description: z.string(),
-  date: z.string().transform((str) => new Date(str)),
+  startDate: z.string().transform((str) => new Date(str)),
+  endDate: z.string().transform((str) => new Date(str)),
   location: z.string().optional(),
   maxAttendees: z.number().optional(),
   isPublic: z.boolean().default(false),
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
     const liveLink = await prisma.liveLink.create({
       data: {
         ...validatedData,
+        date: validatedData.startDate,
         authorId: user.id,
       },
     });
