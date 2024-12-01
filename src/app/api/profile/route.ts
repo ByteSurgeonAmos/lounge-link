@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../api/auth/[...nextauth]/authConfig";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
-
-// Validation schema for profile update
 const ProfileUpdateSchema = z
   .object({
     firstName: z.string().nullable().optional(),

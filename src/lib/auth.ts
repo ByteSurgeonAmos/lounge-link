@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import crypto from "crypto";
-
-const prisma = new PrismaClient();
 
 export async function createVerificationToken(email: string) {
   // Generate a random token
