@@ -52,6 +52,8 @@ model User {
   endorsements   Endorsement[]
   endorsementsGiven Endorsement[] @relation("EndorsementGiver")
   posts          Post[]
+  liveLinks      LiveLink[]
+  reviews        Review[]
 }
 
 enum Role {
@@ -135,4 +137,44 @@ model Post {
   author      User      @relation(fields: [authorId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model LiveLink {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @db.Text
+  date        DateTime
+  location    String?
+  maxAttendees Int?
+  isPublic    Boolean   @default(false)
+  status      LiveLinkStatus @default(UPCOMING)
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Blog {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  text        String    @db.Text
+  stars       Int       @default(5)
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum LiveLinkStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }

@@ -1,64 +1,88 @@
+"use client";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import PremiumLiveLink from "@/components/live-links/PremiumLiveLink";
 import Blog from "@/components/live-links/Blog";
 import PremiumReviews from "@/components/live-links/PremiumReviews";
 import NotReadyYet from "@/components/live-links/NotReadyYet";
-import {PublicLiveLinks} from "@/components/live-links/PublicLiveLinks";
-import {UpcomingLiveLinks} from "@/components/live-links/UpcomingLiveLinks";
+import { PublicLiveLinks } from "@/components/live-links/PublicLiveLinks";
+import { UpcomingLiveLinks } from "@/components/live-links/UpcomingLiveLinks";
+import { ChainLoader } from "@/components/ChainLoader";
+
+interface BlogItem {
+  title: string;
+  description: string;
+}
 
 const LiveLinksPage: React.FC = () => {
-  const blogItems = [
-    {
-      title: "Create and Host Meetups",
-      description:
-        "Plan events for yourself or your team. Be a critical voice in the future of remote meetups, or organize the activities you're passionate about for others to discover.",
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const response = await fetch("/api/profile");
+      if (!response.ok) throw new Error("Failed to fetch user");
+      return response.json();
     },
-    {
-      title: "Build Authentic Relationships",
-      description:
-        "Turn online connections into meaningful relationships. Promote inclusivity, diversity, and trust to ensure your LiveLink is perfect for you.",
-    },
-    {
-      title: "Stand Out in the Community",
-      description:
-        "Create your Community! Keep track of members while Premium members can add their links via LiveLinks.",
-    },
-  ];
+  });
 
-  const reviews = [
-    {
-      id: 1,
-      text: "Awesome tool! Lorem ipsum present ac massa ligula vel est facilisis iaculis.",
-      name: "Olivia Wilson",
-      role: "Founder at Borcello",
-      avatar: "/api/placeholder/48/48",
-      stars: 5,
+  const {
+    data: blogItems = [],
+    isLoading: blogsLoading,
+    error: blogsError,
+  } = useQuery({
+    queryKey: ["blogs"],
+    queryFn: async () => {
+      const response = await fetch("/api/blogs");
+      if (!response.ok) throw new Error("Failed to fetch blogs");
+      return response.json();
     },
-    {
-      id: 2,
-      text: "Super cool! Lorem ipsum present ac massa ligula vel est facilisis iaculis.",
-      name: "Matt Zhang",
-      role: "CEO at Borcello",
-      avatar: "/api/placeholder/48/48",
-      stars: 5,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
+    queryKey: ["reviews"],
+    queryFn: async () => {
+      const response = await fetch("/api/reviews");
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+      return response.json();
     },
-    {
-      id: 3,
-      text: "Awesome tool! Lorem ipsum present ac massa ligula vel est facilisis iaculis.",
-      name: "Hannah Morales",
-      role: "CFO at Borcello",
-      avatar: "/api/placeholder/48/48",
-      stars: 5,
-    },
-  ];
+    refetchInterval: 5 * 60 * 1000,
+  });
+
+  if (userLoading || blogsLoading || reviewsLoading) {
+    return (
+      <div className="h-full w-full flex justify-center items-center">
+        <ChainLoader />
+      </div>
+    );
+  }
+
+  if (userError || blogsError) {
+    return <div>Error loading data. Please try again later.</div>;
+  }
 
   return (
     <div className="container mx-auto p-4 grid grid-cols-12 gap-4">
       <div className="col-span-8 space-y-6">
-        <PremiumLiveLink />
+        {user?.subscriptionTier == "FREE" ? (
+          <PremiumLiveLink />
+        ) : (
+          <div className="bg-yellow-50 p-4 rounded-lg">
+            <p className="text-yellow-800">
+              create LiveLinks and host your own events!
+            </p>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-4">
-          {blogItems.map((item, index) => (
-            <Blog key={index} title={item.title} description={item.description} />
+          {blogItems.map((item: BlogItem, index: any) => (
+            <Blog
+              key={index}
+              title={item.title}
+              description={item.description}
+            />
           ))}
         </div>
         <PremiumReviews reviews={reviews} />
