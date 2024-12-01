@@ -12,7 +12,7 @@ const PostCreateSchema = z.object({
   mentions: z.array(z.string()).default([]),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -20,6 +20,20 @@ export async function GET() {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const cursor = searchParams.get("cursor");
+    const limit = Math.min(
+      parseInt(searchParams.get("limit") || "20", 10),
+      50 // Maximum limit to prevent abuse
+    );
+
+    if (isNaN(limit) || limit < 1) {
+      return NextResponse.json(
+        { message: "Invalid limit parameter" },
+        { status: 400 }
+      );
+    }
+
     const posts = await prisma.post.findMany({
       include: {
         author: {
@@ -35,8 +49,16 @@ export async function GET() {
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: limit + 1, // take one extra to determine if there are more items
+      skip: cursor ? 1 : 0,
+      cursor: cursor ? { id: cursor } : undefined,
     });
+
+    let nextCursor: string | undefined;
+    if (posts.length > limit) {
+      const nextItem = posts.pop(); // remove the extra item
+      nextCursor = nextItem?.id;
+    }
 
     const formattedPosts: FeedPost[] = posts.map((post) => ({
       id: post.id,
@@ -65,7 +87,10 @@ export async function GET() {
       shares: post.shares,
     }));
 
-    return NextResponse.json(formattedPosts);
+    return NextResponse.json({
+      items: formattedPosts,
+      nextCursor,
+    });
   } catch (error) {
     console.error("Feed fetch error:", error);
     return NextResponse.json(
