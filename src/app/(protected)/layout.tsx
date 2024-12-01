@@ -1,11 +1,14 @@
 "use client";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Sidenav from "@/components/Sidenav";
 import AuthNavbar from "@/components/Authnavbar";
 import { ChainLoader } from "@/components/ChainLoader";
+
+const queryClient = new QueryClient();
 
 export default function ProtectedLayout({
   children,
@@ -33,17 +36,19 @@ export default function ProtectedLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidenav />
-      <div className="flex-1 md:ml-64 w-full fixed z-50">
-        <AuthNavbar
-          userName={session?.user?.name || "Guest"}
-          isAuthenticated={!!session}
-        />
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-gray-50">
+        <Sidenav />
+        <div className="flex-1 md:ml-64 w-full fixed z-50">
+          <AuthNavbar
+            userName={session?.user?.name || "Guest"}
+            isAuthenticated={!!session}
+          />
+        </div>
+        <main className="md:ml-64 pt-16">
+          <div className="">{children}</div>
+        </main>
       </div>
-      <main className="md:ml-64 pt-16">
-        <div className="">{children}</div>
-      </main>
-    </div>
+    </QueryClientProvider>
   );
 }

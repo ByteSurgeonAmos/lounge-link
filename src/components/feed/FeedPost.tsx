@@ -11,31 +11,12 @@ import {
   Share,
   Star,
 } from "lucide-react";
+import { FeedPost as FeedPostType } from "../../../types/feed";
 
 interface FeedPostProps {
-  post: {
-    id: number;
-    blogProfile: {
-      profilePic: string;
-      name: string;
-      jobTitle: string;
-      location: string;
-      email: string;
-    };
-    user: {
-      avatar: string;
-    };
-    title: string;
-    content: string;
-    image?: string;
-    mentions?: string[];
-    timestamp: string;
-    likes: number;
-    comments: number;
-    reposts: number;
-    shares: number;
-  };
+  post: FeedPostType;
 }
+
 import { motion } from "framer-motion";
 
 const FeedPost: React.FC<FeedPostProps> = ({ post }) => {
@@ -59,7 +40,8 @@ const FeedPost: React.FC<FeedPostProps> = ({ post }) => {
   const handleRepost = () => setReposted(!reposted);
 
   // Generate mention links (can be customized for user profiles)
-  const mentionLink = (mention: string) => `/profile/${mention.replace("@", "")}`;
+  const mentionLink = (mention: string) =>
+    `/profile/${mention.replace("@", "")}`;
 
   return (
     <div className="bg-white rounded-lg shadow p-6 space-y-4">
@@ -171,7 +153,7 @@ const FeedPost: React.FC<FeedPostProps> = ({ post }) => {
       </div>
 
       {/* Comment Modal */}
-        {showCommentModal && (
+      {showCommentModal && (
         <div className="bg-gray-100 rounded-lg p-4 mt-4 transition duration-300 ease-in-out transform opacity-100 scale-100">
           <h3 className="font-medium text-lg mb-2">Comments</h3>
           <ul className="space-y-2 mb-4">
