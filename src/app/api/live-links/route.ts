@@ -60,31 +60,45 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "10");
+  const skip = (page - 1) * limit;
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const liveLinks = await prisma.liveLink.findMany({
-      where: {
-        OR: [{ isPublic: true }, { author: { email: session.user.email } }],
-      },
-      include: {
-        author: {
-          select: {
-            firstName: true,
-            lastName: true,
-            avatar: true,
+    const [liveLinks, total] = await Promise.all([
+      prisma.liveLink.findMany({
+        where: { isPublic: true },
+        include: {
+          author: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
           },
         },
-      },
-      orderBy: { date: "asc" },
-    });
+        orderBy: { date: "asc" },
+        skip,
+        take: limit,
+      }),
+      prisma.liveLink.count({
+        where: { isPublic: true },
+      }),
+    ]);
 
-    return NextResponse.json(liveLinks);
+    return NextResponse.json({
+      items: liveLinks,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch LiveLinks" },

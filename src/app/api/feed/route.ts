@@ -12,6 +12,35 @@ const PostCreateSchema = z.object({
   mentions: z.array(z.string()).default([]),
 });
 
+function formatPost(post: any): FeedPost {
+  return {
+    id: post.id,
+    blogProfile: {
+      profilePic: post.author.avatar || "/api/placeholder/48/48",
+      name: `${post.author.firstName || ""} ${
+        post.author.lastName || ""
+      }`.trim(),
+      jobTitle: post.author.designation || "",
+      location: [post.author.city, post.author.country]
+        .filter(Boolean)
+        .join(", "),
+      email: post.author.email || "",
+    },
+    user: {
+      avatar: post.author.avatar || "/api/placeholder/24/24",
+    },
+    title: post.title,
+    content: post.content,
+    image: post.image || undefined,
+    mentions: post.mentions,
+    timestamp: post.createdAt,
+    likes: post.likes ?? 0,
+    comments: post.comments ?? 0,
+    reposts: post.reposts ?? 0,
+    shares: post.shares ?? 0,
+  };
+}
+
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
@@ -60,32 +89,7 @@ export async function GET(request: Request) {
       nextCursor = nextItem?.id;
     }
 
-    const formattedPosts: FeedPost[] = posts.map((post) => ({
-      id: post.id,
-      blogProfile: {
-        profilePic: post.author.avatar || "/api/placeholder/48/48",
-        name: `${post.author.firstName || ""} ${
-          post.author.lastName || ""
-        }`.trim(),
-        jobTitle: post.author.designation || "",
-        location: [post.author.city, post.author.country]
-          .filter(Boolean)
-          .join(", "),
-        email: post.author.email || "",
-      },
-      user: {
-        avatar: post.author.avatar || "/api/placeholder/24/24",
-      },
-      title: post.title,
-      content: post.content,
-      image: post.image || undefined,
-      mentions: post.mentions,
-      timestamp: post.createdAt,
-      likes: post.likes,
-      comments: post.comments,
-      reposts: post.reposts,
-      shares: post.shares,
-    }));
+    const formattedPosts: FeedPost[] = posts.map(formatPost);
 
     return NextResponse.json({
       items: formattedPosts,
@@ -139,33 +143,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const formattedPost: FeedPost = {
-      id: post.id,
-      blogProfile: {
-        profilePic: post.author.avatar || "/api/placeholder/48/48",
-        name: `${post.author.firstName || ""} ${
-          post.author.lastName || ""
-        }`.trim(),
-        jobTitle: post.author.designation || "",
-        location: [post.author.city, post.author.country]
-          .filter(Boolean)
-          .join(", "),
-        email: post.author.email || "",
-      },
-      user: {
-        avatar: post.author.avatar || "/api/placeholder/24/24",
-      },
-      title: post.title,
-      content: post.content,
-      image: post.image || undefined,
-      mentions: post.mentions,
-      timestamp: post.createdAt,
-      likes: 0,
-      comments: 0,
-      reposts: 0,
-      shares: 0,
-    };
-
+    const formattedPost = formatPost(post);
     return NextResponse.json(formattedPost);
   } catch (error) {
     if (error instanceof z.ZodError) {
