@@ -22,68 +22,92 @@ const Details: React.FC<DetailsProps> = ({
   endorsements,
 }) => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h2 className="font-bold text-lg">Badges</h2>
-      <div className="flex flex-wrap mb-4">
-        {badges.map((badge, index) => (
-          <span
-            key={index}
-            className="bg-blue-100 text-sm p-2 m-1 rounded-lg"
-          >
-            {badge}
-          </span>
-        ))}
-      </div>
-      <h2 className="font-bold text-lg">Top Skills</h2>
-      <div className="flex flex-wrap mb-4">
-        {topSkills.map((skill, index) => (
-          <span
-            key={index}
-            className="bg-blue-100 text-sm p-2 m-1 rounded-lg"
-          >
-            {skill}
-          </span>
-        ))}
-      </div>
-      <h2 className="font-bold text-lg">What I'm Looking For Right Now</h2>
-      <div className="flex flex-wrap mb-4">
-        {lookingFor.map((item, index) => (
-          <span
-            key={index}
-            className="bg-blue-100 text-sm p-2 m-1 rounded-lg"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-      <h2 className="font-bold text-lg">Link Preferences</h2>
-      <div className="flex flex-wrap mb-4">
-        {linkPreferences.map((preference, index) => (
-          <span
-            key={index}
-            className="bg-blue-100 text-sm p-2 m-1 rounded-lg"
-          >
-            {preference}
-          </span>
-        ))}
-      </div>
-      <h2 className="font-bold text-lg">Endorsements</h2>
-      {endorsements.map((endorsement, index) => (
-        <div
-          key={index}
-          className="p-2 border-2 border-black rounded-lg bg-blue-100 flex items-center space-x-2 mb-2"
-        >
-          <img
-            src={endorsement.avatar}
-            alt={endorsement.name}
-            className="w-8 h-8 rounded-full"
-          />
-          <div>
-            <span className="font-bold">{endorsement.name}</span>
-            <p className="text-sm">{endorsement.description}</p>
-          </div>
+    <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
+      <section>
+        <h2 className="font-bold text-xl text-gray-800 mb-3">Badges</h2>
+        <div className="flex flex-wrap gap-2">
+          {badges.map((badge, index) => (
+            <span
+              key={index}
+              className="bg-blue-50 text-blue-600 text-sm px-3 py-1.5 rounded-full font-medium transition-colors hover:bg-blue-100"
+            >
+              {badge}
+            </span>
+          ))}
         </div>
-      ))}
+      </section>
+
+      <section>
+        <h2 className="font-bold text-xl text-gray-800 mb-3">Top Skills</h2>
+        <div className="flex flex-wrap gap-2">
+          {topSkills.map((skill, index) => (
+            <span
+              key={index}
+              className="bg-green-50 text-green-600 text-sm px-3 py-1.5 rounded-full font-medium transition-colors hover:bg-green-100"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-bold text-xl text-gray-800 mb-3">
+          What I'm Looking For Right Now
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {lookingFor.map((item, index) => (
+            <span
+              key={index}
+              className="bg-purple-50 text-purple-600 text-sm px-3 py-1.5 rounded-full font-medium transition-colors hover:bg-purple-100"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-bold text-xl text-gray-800 mb-3">
+          Link Preferences
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {linkPreferences.map((preference, index) => (
+            <span
+              key={index}
+              className="bg-amber-50 text-amber-600 text-sm px-3 py-1.5 rounded-full font-medium transition-colors hover:bg-amber-100"
+            >
+              {preference}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-bold text-xl text-gray-800 mb-3">Endorsements</h2>
+        <div className="space-y-3">
+          {endorsements.map((endorsement, index) => (
+            <div
+              key={index}
+              className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors flex items-start space-x-3"
+            >
+              <img
+                src={endorsement.avatar}
+                alt={endorsement.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div>
+                <span className="font-semibold text-gray-800 block mb-1">
+                  {endorsement.name}
+                </span>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {endorsement.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

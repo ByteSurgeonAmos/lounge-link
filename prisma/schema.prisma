@@ -55,6 +55,11 @@ model User {
   liveLinks           LiveLink[]
   reviews             Review[]
   LiveLinkAttendee    LiveLinkAttendee[]
+  sentConnections     UserConnection[]   @relation("Connector")
+  receivedConnections UserConnection[]   @relation("Connected")
+  sentMessages     Message[]
+  userOneChats     Chat[]    @relation("UserOneChats")
+  userTwoChats     Chat[]    @relation("UserTwoChats")
 }
 
 enum Role {
@@ -191,6 +196,27 @@ model Review {
   updatedAt DateTime @updatedAt
 }
 
+model UserConnection {
+  id           String           @id @default(cuid())
+  status       ConnectionStatus @default(PENDING)
+  connector    User             @relation("Connector", fields: [connectorId], references: [id])
+  connectorId  String
+  connected    User             @relation("Connected", fields: [connectedId], references: [id])
+  connectedId  String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([connectorId, connectedId])
+  @@index([connectorId])
+  @@index([connectedId])
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 enum LiveLinkStatus {
   UPCOMING
   ACTIVE
@@ -202,4 +228,33 @@ enum AttendeeStatus {
   PENDING
   CONFIRMED
   DECLINED
+}
+
+
+model Chat {
+  id        String    @id @default(cuid())
+  userOne   User      @relation("UserOneChats", fields: [userOneId], references: [id])
+  userOneId String
+  userTwo   User      @relation("UserTwoChats", fields: [userTwoId], references: [id])
+  userTwoId String
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([userOneId, userTwoId])
+  @@index([userOneId])
+  @@index([userTwoId])
+}
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([chatId])
+  @@index([senderId])
 }
