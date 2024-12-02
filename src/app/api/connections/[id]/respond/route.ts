@@ -10,7 +10,7 @@ type Props = {
   };
 };
 
-export async function PUT(request: Request, { params }: Props) {
+export async function PUT(request: Request, { params }: any) {
   const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
