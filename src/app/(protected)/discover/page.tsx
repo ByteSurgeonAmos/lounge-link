@@ -78,7 +78,7 @@ const DiscoverPage: React.FC = () => {
               endorsement.giver.avatar || "https://via.placeholder.com/50",
             description: endorsement.description,
           })),
-          userId: userData.id, // Add this line
+          userId: userData.id, // Make sure this matches the id field from the API
         };
 
         return (

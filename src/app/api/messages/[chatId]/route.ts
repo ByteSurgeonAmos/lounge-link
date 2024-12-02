@@ -1,15 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/db";
 
-export async function GET(req: Request, { params }: { params: any }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { chatId: any } }
+) {
   const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { chatId } = await params;
+
   const messages = await prisma.message.findMany({
-    where: { chatId: params.chatId },
+    where: { chatId },
     include: {
       sender: {
         select: {

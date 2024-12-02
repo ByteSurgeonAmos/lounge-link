@@ -21,7 +21,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages, refetch } = useQuery({
+  const {
+    data: messages,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["messages", chatId],
     queryFn: async () => {
       const response = await fetch(`/api/messages/${chatId}`);
@@ -60,8 +64,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  if (isLoading) return <div>Loading chat...</div>;
+
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-lg shadow">
+    <div className="flex flex-col h-full">
       <div className="p-4 border-b">
         <div className="flex items-center space-x-3">
           <div className="relative w-10 h-10">

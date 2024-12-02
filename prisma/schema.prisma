@@ -60,6 +60,9 @@ model User {
   sentMessages     Message[]
   userOneChats     Chat[]    @relation("UserOneChats")
   userTwoChats     Chat[]    @relation("UserTwoChats")
+  likedPosts       Post[]    @relation("PostLikes")
+  repostedPosts    Post[]    @relation("PostReposts")
+  comments         Comment[]
 }
 
 enum Role {
@@ -143,6 +146,9 @@ model Post {
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  likedBy   User[]   @relation("PostLikes")
+  repostedBy User[]  @relation("PostReposts")
+  postComments Comment[]
 }
 
 model LiveLink {
@@ -258,4 +264,18 @@ model Message {
 
   @@index([chatId])
   @@index([senderId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
 }

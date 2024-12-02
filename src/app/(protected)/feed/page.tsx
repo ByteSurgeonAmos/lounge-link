@@ -4,6 +4,7 @@ import FeedPost from "@/components/feed/FeedPost";
 import FeedSidebar from "@/components/feed/FeedSidebar";
 import { FeedPost as FeedPostType } from "../../../../types/feed";
 import { ChainLoader } from "@/components/ChainLoader";
+import CreatePost from "@/components/feed/CreatePost";
 
 const POSTS_PER_PAGE = 20;
 
@@ -59,6 +60,10 @@ const FeedPage = () => {
     return () => observer.disconnect();
   }, [nextCursor, loadingMore]);
 
+  const handlePostCreated = useCallback(() => {
+    fetchPosts();
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -71,6 +76,7 @@ const FeedPage = () => {
     <main className="min-h-screen grid grid-cols-12 gap-6 p-6 bg-gray-100">
       <div className="col-span-8">
         <div className="space-y-6">
+          <CreatePost onPostCreated={handlePostCreated} />
           {feedPosts.map((post) => (
             <FeedPost key={post.id} post={post} />
           ))}

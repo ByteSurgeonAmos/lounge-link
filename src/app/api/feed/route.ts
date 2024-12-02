@@ -63,7 +63,43 @@ export async function GET(request: Request) {
       );
     }
 
+    // Get current user
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    // Get all connected user IDs
+    const connections = await prisma.userConnection.findMany({
+      where: {
+        OR: [
+          { connectorId: currentUser.id, status: "ACCEPTED" },
+          { connectedId: currentUser.id, status: "ACCEPTED" },
+        ],
+      },
+      select: {
+        connectorId: true,
+        connectedId: true,
+      },
+    });
+
+    // Create array of connected user IDs including current user
+    const connectedUserIds = [
+      ...connections.map((c) =>
+        c.connectorId === currentUser.id ? c.connectedId : c.connectorId
+      ),
+      currentUser.id, // Include current user's posts
+    ];
+
     const posts = await prisma.post.findMany({
+      where: {
+        authorId: {
+          in: connectedUserIds,
+        },
+      },
       include: {
         author: {
           select: {
