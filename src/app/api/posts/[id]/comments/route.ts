@@ -12,7 +12,7 @@ const paramsSchema = z.object({
   id: z.string(),
 });
 
-export async function GET(request: Request, context: { params: { id: any } }) {
+export async function GET(request: Request, context: { params: any }) {
   try {
     const params = await context.params;
     const validatedParams = paramsSchema.safeParse(params);
@@ -45,7 +45,7 @@ export async function GET(request: Request, context: { params: { id: any } }) {
   }
 }
 
-export async function POST(request: Request, context: { params: { id: any } }) {
+export async function POST(request: Request, context: { params: any }) {
   try {
     const params = await context.params;
     const validatedParams = paramsSchema.safeParse(params);

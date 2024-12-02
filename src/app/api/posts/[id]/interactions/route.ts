@@ -12,7 +12,7 @@ const actionSchema = z.object({
   action: z.enum(["like", "repost"]),
 });
 
-export async function POST(request: Request, context: { params: { id: any } }) {
+export async function POST(request: Request, context: { params: any }) {
   try {
     const params = await context.params;
     if (!params?.id) {
