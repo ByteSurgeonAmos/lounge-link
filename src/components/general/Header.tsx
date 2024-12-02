@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-      toast.success("Successfully Linked!");
+      toast.success("Sent a Link Invite!");
     } catch (error) {
       toast.error("Failed to Link. Please try again later.");
       console.error("Failed to Link:", error);

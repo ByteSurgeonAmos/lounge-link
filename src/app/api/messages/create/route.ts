@@ -33,7 +33,10 @@ export async function POST(req: Request) {
   });
 
   if (existingChat) {
-    return NextResponse.json(existingChat);
+    return NextResponse.json({
+      chatId: existingChat.id,
+      recipientId: recipientId,
+    });
   }
 
   // Create new chat
@@ -44,5 +47,8 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(newChat);
+  return NextResponse.json({
+    chatId: newChat.id,
+    recipientId: recipientId,
+  });
 }

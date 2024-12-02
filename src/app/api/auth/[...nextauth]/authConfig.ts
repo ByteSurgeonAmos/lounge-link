@@ -45,6 +45,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.username,
+            image: user.avatar,
             rememberMe,
           } satisfies User;
         } catch (error) {
@@ -64,6 +65,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.picture = user.image;
         // Ensure rememberMe is typed as boolean
         token.rememberMe = Boolean(user.rememberMe);
       }
@@ -75,6 +77,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.rememberMe = token.rememberMe as boolean;
+        session.user.image = token.picture as string;
       }
       return session;
     },
