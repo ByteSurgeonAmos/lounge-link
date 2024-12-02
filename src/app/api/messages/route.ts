@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const messageSchema = z.object({
   content: z.string().min(1),
   chatId: z.string(),
