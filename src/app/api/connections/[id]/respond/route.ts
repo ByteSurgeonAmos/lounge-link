@@ -1,13 +1,14 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: any } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
