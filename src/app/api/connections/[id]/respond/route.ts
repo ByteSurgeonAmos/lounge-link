@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession();
   if (!session?.user?.email) {
@@ -27,7 +27,7 @@ export async function PUT(
   }
 
   const connection = await prisma.userConnection.findUnique({
-    where: { id: params.id },
+    where: { id: context.params.id },
   });
 
   if (!connection) {
@@ -42,7 +42,7 @@ export async function PUT(
   }
 
   const updatedConnection = await prisma.userConnection.update({
-    where: { id: params.id },
+    where: { id: context.params.id },
     data: {
       status: action === "accept" ? "ACCEPTED" : "REJECTED",
     },
