@@ -1,16 +1,19 @@
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/db";
 
-async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { action } = await req.json();
+  const { action } = await request.json();
   if (!["accept", "reject"].includes(action)) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
@@ -47,5 +50,3 @@ async function PUT(req: Request, { params }: { params: { id: string } }) {
 
   return NextResponse.json(updatedConnection);
 }
-
-export { PUT };
