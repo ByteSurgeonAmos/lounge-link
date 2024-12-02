@@ -1,12 +1,12 @@
-export const dynamic = "force-dynamic";
-
 import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession();
   if (!session?.user?.email) {
@@ -27,7 +27,7 @@ export async function PUT(
   }
 
   const connection = await prisma.userConnection.findUnique({
-    where: { id: context.params.id },
+    where: { id: params.id },
   });
 
   if (!connection) {
@@ -42,7 +42,7 @@ export async function PUT(
   }
 
   const updatedConnection = await prisma.userConnection.update({
-    where: { id: context.params.id },
+    where: { id: params.id },
     data: {
       status: action === "accept" ? "ACCEPTED" : "REJECTED",
     },
