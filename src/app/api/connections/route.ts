@@ -56,6 +56,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  if (user.id === connectedId) {
+    return NextResponse.json(
+      { error: "Cannot connect with yourself" },
+      { status: 400 }
+    );
+  }
+
   const existingConnection = await prisma.userConnection.findUnique({
     where: {
       connectorId_connectedId: {

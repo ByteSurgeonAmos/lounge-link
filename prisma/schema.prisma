@@ -209,6 +209,7 @@ model UserConnection {
   @@unique([connectorId, connectedId])
   @@index([connectorId])
   @@index([connectedId])
+
 }
 
 enum ConnectionStatus {
