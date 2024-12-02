@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
@@ -9,7 +9,7 @@ const messageSchema = z.object({
   chatId: z.string(),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession();
     if (!session?.user?.email) {
