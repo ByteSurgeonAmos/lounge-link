@@ -1,23 +1,22 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/db";
-import { NextApiRequest, NextApiResponse } from "next";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: Request,
-  context: { params: { id: string } }
-) {
-  const { params } = context;
-  const session = await getServerSession();
+type Props = {
+  params: {
+    id: string;
+  };
+};
 
+export async function PUT(request: Request, { params }: Props) {
+  const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { action } = await request.json();
-
   if (!["accept", "reject"].includes(action)) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
