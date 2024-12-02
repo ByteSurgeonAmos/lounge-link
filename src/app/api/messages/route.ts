@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 // import { pusherServer } from "@/lib/pusher";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const messageSchema = z.object({
   content: z.string().min(1),
   chatId: z.string(),
@@ -55,7 +57,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // await pusherServer.trigger(`chat_${chatId}`, "new-message", message);
+    const { pusherServer } = await import("@/lib/pusher");
+    await pusherServer.trigger(`chat_${chatId}`, "new-message", message);
 
     return NextResponse.json(message);
   } catch (error) {
