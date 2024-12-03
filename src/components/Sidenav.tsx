@@ -7,6 +7,7 @@ import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { MdExplore, MdCampaign } from "react-icons/md";
 import { BiLinkAlt } from "react-icons/bi";
 import { RiVipCrownLine } from "react-icons/ri";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   title: string;
@@ -23,6 +24,7 @@ const Sidenav: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const { data: session } = useSession();
+  const pathname = usePathname();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -98,7 +100,12 @@ const Sidenav: React.FC = () => {
               <li key={index}>
                 <Link
                   href={item.path}
-                  className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-300 hover:text-white transition-colors duration-200"
+                  className={`flex items-center px-6 py-3 transition-colors duration-200
+                  ${
+                    pathname === item.path
+                      ? "bg-gray-500 text-white"
+                      : "text-gray-300 hover:bg-gray-300 hover:text-white"
+                  }`}
                   onClick={() => setIsOpen(false)}
                 >
                   <span className="mr-4">{item.icon}</span>
