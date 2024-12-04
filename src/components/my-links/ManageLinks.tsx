@@ -62,6 +62,7 @@ const ManageLinks: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipientId: userId }),
       });
+
       if (!response.ok) {
         throw new Error(`Failed to create chat: ${response.statusText}`);
       }
