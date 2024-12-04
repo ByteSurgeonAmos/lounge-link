@@ -19,6 +19,11 @@ export async function POST(request: Request, context: { params: any }) {
       return NextResponse.json({ error: "Missing post ID" }, { status: 400 });
     }
 
+    const validatedParams = paramsSchema.safeParse(params);
+    if (!validatedParams.success) {
+      return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -88,9 +93,8 @@ export async function POST(request: Request, context: { params: any }) {
     });
   } catch (error) {
     console.error("Interaction error:", error);
-    return NextResponse.json(
-      { error: "Failed to process interaction" },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to process interaction";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
