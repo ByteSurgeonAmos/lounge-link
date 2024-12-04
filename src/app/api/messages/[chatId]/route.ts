@@ -24,6 +24,5 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
     },
     orderBy: { createdAt: "asc" },
   });
-
   return NextResponse.json(messages);
 }

@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { MessageCircle, Trash2 } from "lucide-react";
 import { ChatWindow } from "../chat/ChatWindow";
 import { ChainLoader } from "../ChainLoader";
+import { pusherClient } from "@/lib/pusher";
+import { useSession } from "next-auth/react";
 
 interface Connection {
   id: string;
@@ -16,6 +18,7 @@ interface Connection {
   };
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdAt: string;
+  unreadCount?: number;
 }
 
 interface ActiveChat {
@@ -28,7 +31,7 @@ const ManageLinks: React.FC = () => {
   const [activeChat, setActiveChat] = useState<ActiveChat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
-
+  const { data: session } = useSession();
   const { data: connections, isLoading } = useQuery({
     queryKey: ["connections"],
     queryFn: async () => {
@@ -36,7 +39,42 @@ const ManageLinks: React.FC = () => {
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
-      return response.json();
+      const data = await response.json();
+
+      // Fetch unread counts for each connection
+      const connectionsWithUnread = await Promise.all(
+        data.map(async (connection: Connection) => {
+          try {
+            const unreadResponse = await fetch(
+              `/api/messages/unread/${connection.id}`,
+              { credentials: "include" }
+            );
+
+            if (unreadResponse.ok) {
+              const { unreadCount } = await unreadResponse.json();
+              console.log("Unread count for", connection.id, ":", unreadCount);
+              return { ...connection, unreadCount };
+            } else {
+              console.error(
+                "Failed to fetch unread count for",
+                connection.id,
+                "Status:",
+                unreadResponse.status
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error fetching unread count for",
+              connection.id,
+              error
+            );
+          }
+
+          return connection;
+        })
+      );
+
+      return connectionsWithUnread;
     },
   });
 
@@ -97,6 +135,37 @@ const ManageLinks: React.FC = () => {
     },
   });
 
+  useEffect(() => {
+    const channel = pusherClient.subscribe(`user_${session?.user?.id}`);
+
+    channel.bind(
+      "unread-update",
+      async ({ connectionId }: { connectionId: string }) => {
+        // Fetch the unread count for the connection with connectionId
+        const unreadResponse = await fetch(
+          `/api/messages/unread/${connectionId}`
+        );
+        if (unreadResponse.ok) {
+          const { unreadCount } = await unreadResponse.json();
+
+          queryClient.setQueryData(
+            ["connections"],
+            (oldData: Connection[] | undefined) => {
+              if (!oldData) return oldData;
+              return oldData.map((conn) =>
+                conn.user.id === connectionId ? { ...conn, unreadCount } : conn
+              );
+            }
+          );
+        }
+      }
+    );
+
+    return () => {
+      pusherClient.unsubscribe(`user_${session?.user?.id}`);
+    };
+  }, [session?.user?.id, queryClient]);
+
   const getStatusBadge = (status: string) => {
     const statusClasses = {
       PENDING: "bg-yellow-100 text-yellow-800",
@@ -123,13 +192,20 @@ const ManageLinks: React.FC = () => {
     );
   }
 
-  const filteredConnections = connections?.filter(
-    (connection: Connection) =>
-      connection.user.firstName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      connection.user.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredConnections = connections
+    ?.filter(
+      (connection: Connection) =>
+        connection.user.firstName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        connection.user.lastName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+    )
+    .sort((a: Connection, b: Connection) => {
+      // Sort by unread count (highest first)
+      return (b.unreadCount || 0) - (a.unreadCount || 0);
+    });
 
   return (
     <div className="p-4 sm:p-6 w-full max-w-full sm:max-w-md bg-custom-blue rounded-lg shadow-lg">
@@ -203,7 +279,7 @@ const ManageLinks: React.FC = () => {
                   <div className="flex space-x-2">
                     {connection.status === "ACCEPTED" && (
                       <button
-                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors relative"
                         onClick={() =>
                           messageMutation.mutate(connection.user.id)
                         }
@@ -211,6 +287,11 @@ const ManageLinks: React.FC = () => {
                         title="Send message"
                       >
                         <MessageCircle size={20} />
+                        {(connection.unreadCount ?? 0) > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {connection.unreadCount}
+                          </span>
+                        )}
                       </button>
                     )}
                     <button
