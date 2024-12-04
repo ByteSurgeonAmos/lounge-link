@@ -58,6 +58,7 @@ model User {
   sentConnections     UserConnection[]   @relation("Connector")
   receivedConnections UserConnection[]   @relation("Connected")
   sentMessages     Message[]
+  receivedMessages Message[] @relation("MessageRecipient")
   userOneChats     Chat[]    @relation("UserOneChats")
   userTwoChats     Chat[]    @relation("UserTwoChats")
   likedPosts       Post[]    @relation("PostLikes")
@@ -145,7 +146,7 @@ model Post {
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
   likedBy   User[]   @relation("PostLikes")
   repostedBy User[]  @relation("PostReposts")
   postComments Comment[]
@@ -253,17 +254,20 @@ model Chat {
   @@index([userTwoId])
 }
 model Message {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  chatId    String
-  chat      Chat     @relation(fields: [chatId], references: [id])
-  senderId  String
-  sender    User     @relation(fields: [senderId], references: [id])
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  chatId      String
+  chat        Chat     @relation(fields: [chatId], references: [id])
+  senderId    String
+  sender      User     @relation(fields: [senderId], references: [id])
+  recipientId String
+  recipient   User     @relation("MessageRecipient", fields: [recipientId], references: [id])
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
   @@index([chatId])
   @@index([senderId])
+  @@index([recipientId])
 }
 
 model Comment {

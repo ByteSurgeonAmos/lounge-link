@@ -49,6 +49,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     },
   });
 
+  const markAsRead = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/messages/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatId }),
+      });
+      if (!response.ok) throw new Error("Failed to mark messages as read");
+      return response.json();
+    },
+  });
+
   useEffect(() => {
     const channel = pusherClient.subscribe(`chat_${chatId}`);
     channel.bind("new-message", () => {
@@ -63,6 +75,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    // Mark messages as read when chat window opens
+    markAsRead.mutate();
+  }, [chatId]);
 
   if (isLoading) return <div>Loading chat...</div>;
 
