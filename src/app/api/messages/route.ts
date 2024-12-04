@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    console.log("Incoming body:", body);
 
     const result = messageSchema.safeParse(body);
     if (!result.success) {
@@ -39,7 +38,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // First get the chat to determine recipient
     const chat = await prisma.chat.findUnique({
       where: { id: chatId },
       select: { userOneId: true, userTwoId: true },
@@ -49,7 +47,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
     }
 
-    // Determine the recipient ID (the other user in the chat)
     const recipientId =
       chat.userOneId === user.id ? chat.userTwoId : chat.userOneId;
 

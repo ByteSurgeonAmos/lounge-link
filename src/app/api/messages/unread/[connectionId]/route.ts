@@ -26,8 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
   const unreadCount = await prisma.message.count({
     where: {
       chatId: chat.id,
-      senderId: connectionId, // Messages from the other user
-      recipientId: session.user.id, // Messages sent to current user
+      senderId: connectionId,
+      recipientId: session.user.id,
       read: false,
     },
   });

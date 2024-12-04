@@ -27,11 +27,9 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Determine the other user's ID
   const otherUserId =
     chat?.userOneId === session.user.id ? chat.userTwoId : chat?.userOneId;
 
-  // Trigger the unread-update event for the other user
   await pusher.trigger(`user_${otherUserId}`, "unread-update", {
     connectionId: session.user.id,
   });

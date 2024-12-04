@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { pusherClient } from "@/lib/pusher";
 import Image from "next/image";
 import { Send } from "lucide-react";
+import { ChainLoader } from "../ChainLoader";
 
 interface ChatWindowProps {
   chatId: string;
@@ -73,15 +74,59 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [chatId, refetch]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const messagesContainer = messagesEndRef.current?.parentElement;
+    if (!messagesContainer) return;
+
+    const isNearBottom =
+      messagesContainer.scrollHeight - messagesContainer.scrollTop <=
+      messagesContainer.clientHeight + 100;
+
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
   }, [messages]);
 
+  // Remove the useEffect that automatically marks messages as read
+  // This was causing the issue:
+  // useEffect(() => {
+  //   markAsRead.mutate();
+  // }, [chatId]);
+
+  // Add new intersection observer logic
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // Mark messages as read when chat window opens
-    markAsRead.mutate();
+    if (!messagesContainerRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          markAsRead.mutate();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observerRef.current.observe(messagesContainerRef.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
   }, [chatId]);
 
-  if (isLoading) return <div>Loading chat...</div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center">
+        {" "}
+        <ChainLoader />
+      </div>
+    );
 
   return (
     <div className="flex flex-col h-full">
@@ -101,7 +146,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
         {messages?.map((msg: any) => (
           <div
             key={msg.id}
