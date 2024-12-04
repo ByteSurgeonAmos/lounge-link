@@ -31,6 +31,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   const {
     data: messages,
@@ -73,15 +74,45 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   });
 
   useEffect(() => {
+    notificationSound.current = new Audio("/notification.mp3");
+    notificationSound.current.addEventListener("canplaythrough", () => {
+      console.log("Audio loaded successfully");
+    });
+    notificationSound.current.addEventListener("error", (e) => {
+      console.error("Audio loading error:", e);
+    });
+
+    return () => {
+      if (notificationSound.current) {
+        notificationSound.current.remove();
+        notificationSound.current = null;
+      }
+    };
+  }, []);
+
+  // Modified Pusher effect
+  useEffect(() => {
     const channel = pusherClient.subscribe(`chat_${chatId}`);
-    channel.bind("new-message", () => {
+    channel.bind("new-message", (data: any) => {
+      console.log("New message received:", data);
+      if (data.senderId === otherUser.id) {
+        console.log("Playing notification sound");
+        try {
+          notificationSound.current
+            ?.play()
+            .then(() => console.log("Sound played successfully"))
+            .catch((err) => console.error("Error playing sound:", err));
+        } catch (err) {
+          console.error("Error attempting to play sound:", err);
+        }
+      }
       refetch();
     });
 
     return () => {
       pusherClient.unsubscribe(`chat_${chatId}`);
     };
-  }, [chatId, refetch]);
+  }, [chatId, refetch, otherUser.id]);
 
   useEffect(() => {
     const messagesContainer = messagesEndRef.current?.parentElement;
