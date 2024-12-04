@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { MessageCircle, Trash2 } from "lucide-react";
 import { ChatWindow } from "../chat/ChatWindow";
+import { ChainLoader } from "../ChainLoader";
 
 interface Connection {
   id: string;
@@ -61,6 +62,7 @@ const ManageLinks: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipientId: userId }),
       });
+
       if (!response.ok) {
         throw new Error(`Failed to create chat: ${response.statusText}`);
       }
@@ -114,7 +116,7 @@ const ManageLinks: React.FC = () => {
       <div className="p-6 max-w-md bg-teal-100 rounded-lg shadow-lg">
         <div className="flex justify-center items-center h-40">
           <div className="animate-pulse text-gray-600">
-            Loading connections...
+            <ChainLoader />
           </div>
         </div>
       </div>
@@ -130,7 +132,7 @@ const ManageLinks: React.FC = () => {
   );
 
   return (
-    <div className="p-4 sm:p-6 w-full max-w-full sm:max-w-md bg-teal-100 rounded-lg shadow-lg">
+    <div className="p-4 sm:p-6 w-full max-w-full sm:max-w-md bg-custom-blue rounded-lg shadow-lg">
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
           {error}

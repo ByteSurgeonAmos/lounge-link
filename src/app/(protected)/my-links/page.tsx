@@ -22,7 +22,7 @@ const MyLinksPage = () => {
         <NewLinks />
         <ExplorePeople />
       </div>
-      <div className="lg:w-80 p-6">
+      <div className="p-4">
         <ManageLinks />
         <div className="mt-4">
           {userData?.subscriptionTier === "FREE" && <PremiumCard />}
