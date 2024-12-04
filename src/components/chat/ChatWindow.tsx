@@ -15,6 +15,16 @@ interface ChatWindowProps {
   };
 }
 
+const formatDateTime = (date: string) => {
+  return new Date(date).toLocaleString("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+    month: "short",
+    day: "numeric",
+  });
+};
+
 export const ChatWindow: React.FC<ChatWindowProps> = ({
   chatId,
   otherUser,
@@ -165,9 +175,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               }`}
             >
               <p className="text-sm">{msg.content}</p>
-              <p className="text-xs mt-1 opacity-70">
-                {new Date(msg.createdAt).toLocaleTimeString()}
-              </p>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-xs opacity-70">
+                  {new Date(msg.createdAt).toLocaleTimeString()}
+                </p>
+                {msg.senderId !== otherUser.id && msg.read && (
+                  <p className="text-xs opacity-70">
+                    Read {msg.readAt ? formatDateTime(msg.readAt) : ""}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         ))}
