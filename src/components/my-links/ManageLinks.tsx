@@ -219,7 +219,7 @@ const ManageLinks: React.FC = () => {
         <div className="h-[500px] flex flex-col">
           <button
             onClick={() => setActiveChat(null)}
-            className="mb-4 text-sm text-blue-500 hover:underline"
+            className="mb-4 text-sm text-white hover:underline"
           >
             ← Back to connections
           </button>
