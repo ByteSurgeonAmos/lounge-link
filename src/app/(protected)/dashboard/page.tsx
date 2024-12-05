@@ -56,7 +56,7 @@ export default function DashboardClient() {
             <UpcomingEvents />
           </div>
           <div className="flex flex-col w-full lg:w-auto gap-4">
-            <div className="border shadow-lg">
+            <div className="shadow-lg">
               <QuickLinks />
             </div>
             {profile?.subscriptionTier === "FREE" && (

@@ -11,6 +11,7 @@ import {
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useRouter } from "next/navigation";
 import SuggestedLinks from "./SuggestedLinks";
 
@@ -95,7 +96,7 @@ const QuickLinks: React.FC = () => {
   }
 
   return (
-    <Box className="bg-custom-blue text-white" sx={{ p: 2 }}>
+    <Box className="bg-custom-blue rounded-lg text-white" sx={{ p: 2 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
         Quick Links
       </Typography>
@@ -112,9 +113,9 @@ const QuickLinks: React.FC = () => {
               },
             }}
           >
-            <Stack direction="row" alignItems="center" spacing={2}>
+            <Stack direction="row" alignItems="center" className="flex justify-between gap-3">
               {link.icon}
-              <Box>
+              <Box className="lg:w-48">
                 <Typography variant="subtitle1">{link.title}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {link.description}
@@ -126,7 +127,7 @@ const QuickLinks: React.FC = () => {
                 onClick={link.action}
                 disabled={loading}
               >
-                Get Started
+                <ChevronRightIcon />
               </Button>
             </Stack>
           </Paper>
