@@ -64,6 +64,7 @@ model User {
   likedPosts       Post[]    @relation("PostLikes")
   repostedPosts    Post[]    @relation("PostReposts")
   comments         Comment[]
+  transactions     Transaction[]
 }
 
 enum Role {
@@ -74,9 +75,8 @@ enum Role {
 
 enum SubscriptionTier {
   FREE
-  BASIC
   PRO
-  ENTERPRISE
+  
 }
 
 model Subscription {
@@ -90,6 +90,9 @@ model Subscription {
   paymentStatus   String
   lastPaymentDate DateTime?
   amount          Float
+  paystackRef     String?          @unique
+  paystackSubscriptionCode String? @unique
+  nextPaymentDate          DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -200,7 +203,7 @@ model Review {
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
 
 model UserConnection {
@@ -237,7 +240,6 @@ enum AttendeeStatus {
   CONFIRMED
   DECLINED
 }
-
 
 model Chat {
   id        String    @id @default(cuid())
@@ -283,4 +285,25 @@ model Comment {
 
   @@index([postId])
   @@index([authorId])
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  amount          Float
+  currency        String   @default("USD")
+  status          PaymentStatus
+  reference       String   @unique
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }
