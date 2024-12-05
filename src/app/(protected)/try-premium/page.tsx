@@ -1,7 +1,91 @@
-// src/components/TryPremiumPage.tsx
-import React from "react";
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { PaystackButton } from "react-paystack";
 
 const TryPremiumPage: React.FC = () => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePaystackSuccess = async (
+    reference: string,
+    amount: number,
+    plan: string
+  ) => {
+    try {
+      const response = await fetch("/api/payment/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reference,
+          amount,
+          plan,
+          userId: session?.user?.id,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Payment successful!");
+        router.push("/dashboard");
+      } else {
+        toast.error("Payment verification failed");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleSubscribe = (plan: string) => {
+    const monthlyPrice = 20;
+    const annualDiscount = 0.8; // 20% discount
+    const amountUSD =
+      plan === "monthly" ? monthlyPrice : monthlyPrice * 12 * annualDiscount;
+
+    const amountKES = Math.round(amountUSD * 135); // Convert to KES (1 USD ≈ 135 KES)
+
+    const config = {
+      email: session?.user?.email!,
+      amount: amountKES, // Changed from undefined to amountKES
+      currency: "KES",
+      publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+      metadata: {
+        userId: session?.user?.id,
+        plan,
+        amountUSD,
+        custom_fields: [
+          {
+            display_name: "Plan Type",
+            variable_name: "plan_type",
+            value: plan,
+          },
+          {
+            display_name: "User ID",
+            variable_name: "user_id",
+            value: session?.user?.id || "",
+          },
+        ],
+      },
+      plan:
+        plan === "monthly"
+          ? process.env.NEXT_PUBLIC_PAYSTACK_MONTHLY_PLAN
+          : process.env.NEXT_PUBLIC_PAYSTACK_ANNUAL_PLAN,
+      text: "Pay Now",
+      onSuccess: (response: any) => {
+        console.log(response);
+        handlePaystackSuccess(response.reference, amountUSD, plan);
+      },
+      onClose: () => toast.error("Payment cancelled"),
+    };
+
+    return <PaystackButton {...config} />;
+  };
+
   // Dynamic data for users
   const Users = [
     { name: "Alice", profileImage: "/path/to/alice.jpg" },
@@ -15,17 +99,20 @@ const TryPremiumPage: React.FC = () => {
   const Features = [
     {
       title: "Create and Host Meetups",
-      description: "Plan exclusive meetups, build a trusted circle, and strengthen your professional network.",
+      description:
+        "Plan exclusive meetups, build a trusted circle, and strengthen your professional network.",
       image: "/path/to/meetups.jpg",
     },
     {
       title: "Build Authentic Relationships",
-      description: "Turn online connections into meaningful real-life experiences. Your network, your way.",
+      description:
+        "Turn online connections into meaningful real-life experiences. Your network, your way.",
       image: "/path/to/relationships.jpg",
     },
     {
       title: "Stand Out in the Community",
-      description: "Keep exclusive or relevant connections front and center, making networking simpler.",
+      description:
+        "Keep exclusive or relevant connections front and center, making networking simpler.",
       image: "/path/to/community.jpg",
     },
   ];
@@ -55,6 +142,10 @@ const TryPremiumPage: React.FC = () => {
     );
   };
 
+  const monthlyPrice = 20;
+  const annualPrice = monthlyPrice * 12 * 0.8; // 20% discount
+  const monthlySavings = monthlyPrice * 12 - annualPrice;
+
   return (
     <div className="flex flex-col items-center p-4">
       {/* Header */}
@@ -62,7 +153,8 @@ const TryPremiumPage: React.FC = () => {
         <div className="flex items-center space-x-2 justify-center">
           {renderUsers()}
           <p className="text-gray-600">
-            Join <strong>Jane Doe</strong> and millions of other members using Premium
+            Join <strong>Jane Doe</strong> and millions of other members using
+            Premium
           </p>
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mt-4">
@@ -72,23 +164,33 @@ const TryPremiumPage: React.FC = () => {
 
       {/* Offer Section */}
       <section className="bg-gray-100 rounded-lg p-6 text-center shadow-md max-w-xl w-full">
-        <p className="text-gray-700 text-lg">
-          Enjoy a <strong>1-month free trial</strong> on us. Cancel anytime. We'll send you a reminder 7 days before your trial ends.
-        </p>
-        <div className="my-4">
-          <span className="line-through text-gray-400">$XXX</span>
-          <span className="text-green-600 text-xl font-bold ml-2">$0 One Month Free Trial</span>
-        </div>
-        <p className="text-gray-500 text-sm mb-6">
-          After your free month, pay as little as <strong>$XXX*/month</strong> (save 20% when billed annually). Cancel anytime. We'll remind you 7 days before your trial ends.
-        </p>
-        <div className="flex justify-center gap-4">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-            Try One Month for Free
-          </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition">
-            Get Annual Plan
-          </button>
+        <h2 className="text-2xl font-bold mb-6">Choose Your Plan</h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Monthly Plan */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-xl font-semibold mb-2">Monthly</h3>
+            <p className="text-3xl font-bold text-blue-600">${monthlyPrice}</p>
+            <p className="text-gray-600 mb-4">per month</p>
+            {handleSubscribe("monthly")}
+          </div>
+
+          {/* Annual Plan */}
+          <div className="bg-white p-6 rounded-lg shadow border-2 border-blue-500">
+            <h3 className="text-xl font-semibold mb-2">Annual</h3>
+            <p className="text-3xl font-bold text-blue-600">
+              ${(annualPrice / 12).toFixed(2)}
+            </p>
+            <p className="text-gray-600 mb-2">per month</p>
+            <p className="text-sm text-green-600 mb-4">
+              Save ${monthlySavings.toFixed(2)} per year
+            </p>
+            {handleSubscribe("annual")}
+            <div className="mt-2">
+              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                Best Value
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -104,14 +206,21 @@ const TryPremiumPage: React.FC = () => {
       <section className="bg-gray-100 p-6 rounded-lg shadow-md mt-8 w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Features.map((feature, index) => (
-            <div key={index} className="bg-white rounded-lg shadow p-4 text-center">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow p-4 text-center"
+            >
               <img
                 src={feature.image}
                 alt={feature.title}
                 className="w-full h-40 object-cover rounded-lg mb-4"
               />
-              <h3 className="text-lg font-semibold text-gray-800">{feature.title}</h3>
-              <p className="text-gray-600 text-sm mt-2">{feature.description}</p>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 text-sm mt-2">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>
