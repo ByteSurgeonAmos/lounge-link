@@ -36,7 +36,7 @@ const ActiveEngagedLinks = () => {
   }, [links.length]);
 
   return (
-    <Card className="w-86 bg-teal-500 text-white">
+    <Card className="w-86 bg-custom-blue text-white">
       <CardHeader>
         <CardTitle>Active Engaged Links</CardTitle>
       </CardHeader>
