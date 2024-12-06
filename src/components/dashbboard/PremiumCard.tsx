@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 interface PremiumCardProps {
   onUpgradeClick?: () => void;
@@ -15,7 +15,9 @@ const PremiumCard: React.FC<PremiumCardProps> = ({ onUpgradeClick }) => {
         <div className="space-y-4">
           <div className="space-y-1">
             <p className="text-white text-lg font-medium">Upgrade</p>
-            <h2 className="text-white text-2xl font-bold">GO PREMIUM</h2>
+            <h2 className="text-white text-3xl font-extrabold tracking-wide">
+          GO PREMIUM
+        </h2>
           </div>
 
           <p className="text-white/90 text-sm leading-relaxed">
@@ -25,12 +27,13 @@ const PremiumCard: React.FC<PremiumCardProps> = ({ onUpgradeClick }) => {
             visibility. Organize and join events that match your interests,
             instantly and so much more.
           </p>
-
-          <div className="flex items-center space-x-2 text-white">
-            <ArrowUpRight className="w-5 h-5" />
-            <ArrowUpRight className="w-5 h-5" />
-            <ArrowUpRight className="w-5 h-5" />
-          </div>
+          
+        {/* Footer with icons */}
+        <div className="flex items-center space-x-1 text-white">
+          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5" />
+        </div>
         </div>
       </div>
     </div>
