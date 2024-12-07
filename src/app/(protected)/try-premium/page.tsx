@@ -9,6 +9,12 @@ const TryPremiumPage: React.FC = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(""); // Track selected plan
+
+  const handlePlanClick = (plan: string) => {
+    setSelectedPlan(plan); // Set the selected plan
+    handleSubscribe(plan); // Call the subscription handler
+  };
 
   const handlePaystackSuccess = async (
     reference: string,
@@ -164,35 +170,51 @@ const TryPremiumPage: React.FC = () => {
 
       {/* Offer Section */}
       <section className="bg-gray-100 rounded-lg p-6 text-center shadow-md max-w-xl w-full">
-        <h2 className="text-2xl font-bold mb-6">Choose Your Plan</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Monthly Plan */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-2">Monthly</h3>
-            <p className="text-3xl font-bold text-blue-600">${monthlyPrice}</p>
-            <p className="text-gray-600 mb-4">per month</p>
-            {handleSubscribe("monthly")}
-          </div>
+      <h2 className="text-2xl font-bold mb-6">Choose Your Plan</h2>
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Monthly Plan */}
+        <div
+          onClick={() => handlePlanClick("monthly")}
+          className={`bg-white p-6 rounded-lg shadow cursor-pointer 
+            ${
+              selectedPlan === "monthly"
+                ? "border-2 border-blue-500"
+                : "border border-transparent"
+            } 
+            hover:border-blue-500`}
+        >
+          <h3 className="text-xl font-semibold mb-2">Monthly</h3>
+          <p className="text-3xl font-bold text-blue-600">${monthlyPrice}</p>
+          <p className="text-gray-600 mb-4">per month</p>
+        </div>
 
-          {/* Annual Plan */}
-          <div className="bg-white p-6 rounded-lg shadow border-2 border-blue-500">
-            <h3 className="text-xl font-semibold mb-2">Annual</h3>
-            <p className="text-3xl font-bold text-blue-600">
-              ${(annualPrice / 12).toFixed(2)}
-            </p>
-            <p className="text-gray-600 mb-2">per month</p>
-            <p className="text-sm text-green-600 mb-4">
-              Save ${monthlySavings.toFixed(2)} per year
-            </p>
-            {handleSubscribe("annual")}
-            <div className="mt-2">
-              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                Best Value
-              </span>
-            </div>
+        {/* Annual Plan */}
+        <div
+          onClick={() => handlePlanClick("annual")}
+          className={`bg-white p-6 rounded-lg shadow cursor-pointer 
+            ${
+              selectedPlan === "annual"
+                ? "border-2 border-blue-500"
+                : "border border-transparent"
+            } 
+            hover:border-blue-500`}
+        >
+          <h3 className="text-xl font-semibold mb-2">Annual</h3>
+          <p className="text-3xl font-bold text-blue-600">
+            ${(annualPrice / 12).toFixed(2)}
+          </p>
+          <p className="text-gray-600 mb-2">per month</p>
+          <p className="text-sm text-green-600 mb-4">
+            Save ${monthlySavings.toFixed(2)} per year
+          </p>
+          <div className="mt-2">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+              Best Value
+            </span>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Statistics Section */}
       <section className="text-center mt-8">
