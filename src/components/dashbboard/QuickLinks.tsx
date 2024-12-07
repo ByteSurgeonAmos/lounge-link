@@ -114,7 +114,7 @@ const QuickLinks: React.FC = () => {
             }}
           >
             <Stack direction="row" alignItems="center" className="flex justify-between gap-3">
-              {link.icon}
+              
               <Box className="lg:w-48">
                 <Typography variant="subtitle1">{link.title}</Typography>
                 <Typography variant="body2" color="text.secondary">
