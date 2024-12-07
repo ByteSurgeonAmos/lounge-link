@@ -73,8 +73,8 @@ const FeedPage = () => {
   }
 
   return (
-    <main className="min-h-screen grid grid-cols-12 gap-6 p-6 bg-gray-100">
-      <div className="col-span-8">
+    <main className="min-h-screen grid lg:grid-cols-12 grid-cols-1 gap-6 p-6 bg-gray-100">
+      <div className="lg:col-span-8">
         <div className="space-y-6">
           <CreatePost onPostCreated={handlePostCreated} />
           {feedPosts.map((post) => (
@@ -85,7 +85,7 @@ const FeedPage = () => {
           </div>
         </div>
       </div>
-      <div className="col-span-4">
+      <div className="lg:col-span-4">
         <FeedSidebar />
       </div>
     </main>
